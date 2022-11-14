@@ -1,0 +1,65 @@
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+from spider.config import headers
+from spider.logger import crawler
+from spider.config.conf import (
+    get_timeout, get_crawl_interal, get_excp_interal, get_max_retries)
+
+# base_url = 'https://chunyuyisheng.com/pc/doctors/0-0-0/'
+
+TIME_OUT = get_timeout()
+INTERAL = get_crawl_interal()
+MAX_RETRIES = get_max_retries()
+EXCP_INTERAL = get_excp_interal()
+# COOKIES = get_cookies()
+
+
+# Disable annoying InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+# Get Cclinic Page HTML 获取科室页的html文本
+def get_clinic_html(url):
+    '''
+    :param url: url to crawl
+    :return: response text, when a exception is raised, return ''
+    '''
+
+    count = 0
+    # 小于爬虫重试次数时
+    while count < MAX_RETRIES:
+        try :
+            resp = requests.get(url, headers=headers, timeout=TIME_OUT, verify=False)
+        except(requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, AttributeError) as e:
+            # 警告日志记录
+            # crawler.warning('Excepitons are raised when crawling {}.Here are details:{}'.format(url, e))
+            count += 1
+            continue
+
+        '''
+        处理错误：
+        414：ip被封
+        404：url不存在
+        403：没有权限（账号被封）
+        需要login
+        需要proxy
+        需要login + cookie
+        '''
+
+        # 抓取到文本内容
+        if resp.text:
+            page = resp.text.encode('utf-8', 'ignore').decode('utf-8')
+        else:
+            count += 1
+            continue
+
+        # 用redis存储抓取到url，然后返回page
+        # print(page)
+        return page
+
+    # 用redis存储抓取到url，然后返回null
+    return ''
+
+# if __name__ == '__main__':
+#     get_clinic_html(base_url)
