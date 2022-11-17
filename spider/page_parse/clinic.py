@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 from lxml import etree
 
-from spider.page_get.clinic_basic import get_clinic_html
+from spider.page_get.basic import get_page_html
 
 BASE_URL = 'https://chunyuyisheng.com/pc/doctors/0-0-0/'
 CLINIC_URL = 'https://chunyuyisheng.com/pc/doctors/{}/'
@@ -21,7 +21,6 @@ def get_first_clinic_id_list(html):
 
     # 使用正则将其余id提取出来并存入新列表
     for item in first_clinic_row_list:
-
         pattern = re.compile("\S{12}")
         data = re.sub(pattern, '', item.contents[1]['href'])
         data = re.sub("/$", '', data)
@@ -77,10 +76,10 @@ def get_second_clinic_list(first_clinic_id_list):
         if flag:
             second_clinic_list.append(flag)
         else:
-            print('===无二级科室===',first_clinic_id)
+            # print('===无二级科室===', first_clinic_id)
             continue
 
-    print(second_clinic_list)
+    # print(second_clinic_list)
     return second_clinic_list
 
 
@@ -91,7 +90,7 @@ def is_second_clinic_exist(first_clinic_id):
     :return: data_list
     '''
     url = CLINIC_URL.format(first_clinic_id)
-    html = get_clinic_html(url)
+    html = get_page_html(url)
     soup = BeautifulSoup(html, 'html.parser')
     ul_data = soup.find_all("ul", class_='tab-type-free')
 
@@ -125,7 +124,7 @@ def is_second_clinic_exist(first_clinic_id):
 
 
 if __name__ == '__main__':
-    html = get_clinic_html(BASE_URL)
+    html = get_page_html(BASE_URL)
     first_clinic_list = get_first_clinic_id_list(html)
     # print("first_clinic_list",first_clinic_list)
     # string = '0-0-2'

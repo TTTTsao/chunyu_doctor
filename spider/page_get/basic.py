@@ -19,8 +19,8 @@ EXCP_INTERAL = get_excp_interal()
 # Disable annoying InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-# Get Cclinic Page HTML 获取科室页的html文本
-def get_clinic_html(url):
+# Get Page HTML 获取网页的html文本
+def get_page_html(url):
     '''
     :param url: url to crawl
     :return: response text, when a exception is raised, return ''
