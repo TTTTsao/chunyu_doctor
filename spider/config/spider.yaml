@@ -6,18 +6,18 @@ excp_interal: 5*60              # time for sleeping when crawling raises excepti
 
 # TODO set a default value for max_value of crawling
 #max_search_page: 50            # max search page for crawling
-#max_home_page: 50              # max user home page for crawling
 #max_comment_page: 2000         # max comment page for crawling
 #max_repost_page: 2000          # max repost page for crawling
 #max_dialogue_page: 2000        # max dialogue page for crawling
+max_home_page: 30              # max user home page for crawling
 max_retries: 5                 # retry times for crawling
 
 # MySQL
 db:
-    host: 10.22.32.29
+    host: 127.0.0.1
     port: 3306
-    user: guest
-#    password: @#guest87654321@#
+    user: root
+    password:
     db_name: chunyu_doctor
     db_type: mysql
 

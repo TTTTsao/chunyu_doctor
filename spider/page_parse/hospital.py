@@ -1,11 +1,11 @@
-import re
 import json
-import datetime
 
 from bs4 import BeautifulSoup
 from lxml import etree
 
 from spider.page_get.basic import get_page_html
+from spider.util.reg.reg_hospital import *
+from spider.db.models import *
 
 BASE_URL = 'https://chunyuyisheng.com/pc/hospitals/'
 HOSPITAL_URL = 'https://chunyuyisheng.com/pc/hospitals/{}'
@@ -41,158 +41,170 @@ def get_hospital_rank(location_id, clinic_id, is_second_page = False):
 
     pass
 
-def get_clinic_rank(hospital_id):
+def get_hospital_clinic_rank(hospital_id, html):
     '''
     get clinic rank info from hospital detail page
     :param hospital_id:
     :return: clinic rank info data
     '''
-    url = HOSPITAL_DETAIL_URL.format(hospital_id)
-    html = get_page_html(url)
-    xpath = etree.HTML(html)
+    if not html:
+        return
 
-    row_rank_data_list = xpath.xpath('/html/body/div[4]/div[3]/ul/li/a/text()')
-    rank_name_list = []
-    rank_level_list = []
+    xpath = etree.HTML(html)
+    hospital_clinic_rank_datas = []
+    row_rank_data_list = xpath.xpath("//li[@class='hospital-rank']/a/text()")
+    print(row_rank_data_list)
+
+    # 判断是否存在排名信息
+    if len(row_rank_data_list) == 0:
+        print("无医院排名信息")
+        return
 
     for i in range(len(row_rank_data_list)):
-        rank_name = get_reg_rank_name(str(row_rank_data_list[i]))
-        rank_level = get_reg_rank_level(str(row_rank_data_list[i]))
-        rank_name_list.append(rank_name)
-        rank_level_list.append(rank_level)
-        #TODO 写入 clinic rank info 对象
+        hospital_clinic_rank = HospitalClinicRank()
+        hospital_clinic_rank.hospital_id = hospital_id
+        hospital_clinic_rank.rank_name = get_reg_rank_name(str(row_rank_data_list[i]))
+        hospital_clinic_rank.rank_level = get_reg_rank_level(str(row_rank_data_list[i]))
+        hospital_clinic_rank_datas.append(hospital_clinic_rank)
 
-    # TODO 返回 clinic rank info 对象
-    return ''
+    return hospital_clinic_rank_datas
 
-def get_hospital_clinic_base_info(clinic_id):
+def get_hospital_clinic_base_info(clinic_id, html):
     '''
     get hospital's clinic base info from clinic detail page
     :param clinic_id:
     :return: hospital_clinic_base_info data
     '''
-
-    url = HOSPITAL_CLINIC_URL.format(clinic_id)
-    html = get_page_html(url)
+    if not html:
+        return
     xpath = etree.HTML(html)
+    hospital_clinic_data = HospitalClinicBaseInfo()
 
-    id = clinic_id
-    clinic_name = str(xpath.xpath('/html/body/div[4]/div[1]/h3/text()'))
-    clinic_profile = '无'
+    hospital_clinic_data.hospital_clinic_id = clinic_id
+    hospital_clinic_data.hospital_clinic_name = str(xpath.xpath('/html/body/div[4]/div[1]/h3/text()')[0])
 
     row_profile = xpath.xpath('/html/body/div[4]/div[3]/div/p/text()')
-    # 判断没有科室简介的情况
+    # 没有科室简介
     if len(row_profile) != 0:
-        clinic_profile = get_reg_clinic_profile(str(row_profile))
+        hospital_clinic_data.hospital_clinic_profile = get_reg_clinic_profile(str(row_profile))
 
-    # TODO 写入 hospital_clinic_base_info 对象
-
-
-    # TODO 返回 hospital_clinic_base_info 对象
-    return ''
+    return hospital_clinic_data
 
 
-def get_hospital_realtime_inquiry_nums(hospital_id):
+def get_hospital_real_time_inquiry(hospital_id, html):
     '''
     get hospital realtime inquiry doctors nums info from detail page
     :param hospital_id:
     :return: hospital_realtime_inquiry_nums data
     '''
-
-    url = HOSPITAL_DETAIL_URL.format(hospital_id)
-    html = get_page_html(url)
+    if not html:
+        return
+    hospital_real_time_inquiry_data = HospitalRealTimeInquiry()
     xpath = etree.HTML(html)
 
-    id = hospital_id
-    inquiry_nums = xpath.xpath('/html/body/div[4]/div[4]/span[3]/text()')[0]
+    hospital_real_time_inquiry_data.hospital_id = hospital_id
 
-    # TODO 返回 hospital_realtime_inquiry_nums data 对象
-    return ''
+    # TODO 1.将该错误记录于日志 2.记录该hospital_id用于后续重新尝试爬取
+    try:
+        inquiry_nums = xpath.xpath("//span[@class='light'][2]/text()")[0]
+        print("inquiry_nums", inquiry_nums)
+        hospital_real_time_inquiry_data.real_time_inquiry_doctor_num = int(inquiry_nums)
+    except:
+        hospital_real_time_inquiry_data.real_time_inquiry_doctor_num = 0
+
+    return hospital_real_time_inquiry_data
 
 
-def get_hospital_enter_doctor_info(hospital_id):
+def get_hospital_enter_doctor_info(hospital_id, html):
     '''
     get hospital enter doctor info from detail page
     :param hospital_id:
     :return: hospital_enter_doctor_info data
     '''
-    url = HOSPITAL_DETAIL_URL.format(hospital_id)
-    html = get_page_html(url)
+    if not html:
+        return
     xpath = etree.HTML(html)
+    hospital_enter_datas = []
 
-    hospital_id = hospital_id
-    clinic_id_list = []
-    enter_nums_list = []
+    # 判断页面科室暂无的情况
+    try:
+        if '暂无相关信息' in html:
+            # 日志记录
+            print("暂无相关信息")
+            return False
+    except AttributeError:
+        return False
 
     row_clinic_id_list = xpath.xpath('//*[@id="clinic"]/li/a/@href')
     row_enter_nums_list = xpath.xpath('//*[@id="clinic"]/li/span/i/text()')
 
+
     # 判断该科室是否为0人，如果是0人需要返回0
     for i in range(len(row_clinic_id_list)):
+        hospital_enter_data = HospitalClinicEnterDoctor()
+        hospital_enter_data.hospital_id = hospital_id
+        hospital_enter_data.hospital_clinic_id = get_reg_clinic_id(str(row_clinic_id_list[i]))
         if len(row_clinic_id_list) > len(row_enter_nums_list):
+            # 有科室为0人
             if ( i - len(row_enter_nums_list) ) > -1:
-                clinic_id = get_reg_clinic_id(str(row_clinic_id_list[i]))
-                clinic_id_list.append(clinic_id)
-                enter_nums_list.append(0)
+                # 进入为0人的科室
+                hospital_enter_data.hospital_clinic_amount = 0
             else:
-                clinic_id = get_reg_clinic_id(str(row_clinic_id_list[i]))
-                clinic_id_list.append(clinic_id)
-                enter_nums_list.append(int(row_enter_nums_list[i]))
+                hospital_enter_data.hospital_clinic_amount = int(row_enter_nums_list[i])
         else:
-            clinic_id = get_reg_clinic_id(str(row_clinic_id_list[i]))
-            clinic_id_list.append(clinic_id)
-            enter_nums_list.append(int(row_enter_nums_list[i]))
-    # print(clinic_id_list)
-    # print(enter_nums_list)
-    # TODO 返回 hospital_enter_doctor_info data 对象
-    return ''
+            hospital_enter_data.hospital_clinic_amount = int(row_enter_nums_list[i])
 
-def get_hospital_base_info(hospital_id):
+        hospital_enter_datas.append(hospital_enter_data)
+
+    return hospital_enter_datas
+
+def get_hospital_base_info(hospital_id, city, html):
     '''
     get hospital base info from detail page
     :param html:
     :return: hospital_base_info data
     '''
-
-    url = HOSPITAL_DETAIL_URL.format(hospital_id)
-    html = get_page_html(url)
+    if not html:
+        return
+    hospital_data = Hospital()
     xpath = etree.HTML(html)
 
-    id = hospital_id
-    name = (xpath.xpath('/html/body/div[4]/ul[1]/li[4]/text()'))[0]
+    hospital_data.hospital_id = hospital_id
+    hospital_data.hospital_city = city
+    name = (xpath.xpath('/html/body/div[4]/div[1]/h3/text()'))[0]
+    hospital_data.hospital_name = str(name)
+
     area = (xpath.xpath('//*[@id="region_href"]/text()'))[0]
+    hospital_data.hospital_area = str(area)
+
     province = (xpath.xpath('/html/body/div[4]/ul[1]/li[3]/a/text()'))[0]
+    hospital_data.hospital_province = str(province)
 
-    city = ''
-    temp_city = xpath.xpath('/html/body/div[4]/ul[1]/li[4]/a/text')
-    if len(temp_city) == 0:
-        city = ''
-    else:
-        city = temp_city[0]
+    # temp_city = xpath.xpath('/html/body/div[4]/ul[1]/li[4]/a/text')
+    # if len(temp_city) != 0:
+    #     hospital_data.hospital_city = str(temp_city[0])
 
-    row_profile = xpath.xpath('/html/body/div[4]/div[3]/div[1]/p/text()')
+    row_profile = xpath.xpath("//div[@class='content-info']/div[1]/p/text()")
     str_profile = str(row_profile)
-    profile = get_reg_hospital_profile(str_profile)
+    hospital_data.hospital_profile = get_reg_hospital_profile(str_profile)
 
     # JSON-tag
     tag_dic = {}
     tag_dic["rank"] = xpath.xpath("/html/body/div[4]/div[1]/span[1]/text()")[0]
     tag_dic["type"] = xpath.xpath("/html/body/div[4]/div[1]/span[2]/text()")[0]
-    tag = json.dumps(tag_dic, ensure_ascii=False)  # ensure_ascii=False 防止中文被转化
+    hospital_data.hospital_tag = json.dumps(tag_dic, ensure_ascii=False)  # ensure_ascii=False 防止中文被转化
 
-    # TODO 返回 hospital_base_info 对象
-    return ''
+    return hospital_data
 
 
-def get_hospital_list_from_province(province_id):
+def get_hospital_list_from_province(html):
     '''
     get hospital id list by province
     :param province_id_list:
     :return: hospital list (id and city)
     '''
-
-    url = HOSPITAL_URL.format(province_id)
-    html = get_page_html(url)
+    if not html:
+        return
     soup = BeautifulSoup(html, 'html.parser')
     div_data = soup.find_all(class_='list')
 
@@ -216,7 +228,8 @@ def get_hospital_province_list(html):
     :param html:
     :return: province id list
     '''
-
+    if not html:
+        return
     soup = BeautifulSoup(html, 'html.parser')
     ul_data = soup.find_all("ul", class_='city')
 
@@ -225,8 +238,8 @@ def get_hospital_province_list(html):
     for ul in ul_data:
         for li in ul.find_all('li'):
             province_id = get_reg_province_id(li.contents[0]['href'])
-
             province_id_list.append(province_id)
+    print(province_id_list)
     return province_id_list
 
 # 获取排名信息处一级科室id和二级科室id，并置于同一个list返回 [ {1st_id, 1st_name}, [list 2nd: {2nd_id, 2nd_name}] ]
@@ -238,7 +251,6 @@ def get_clinic_format_url_list():
     '''
     html = get_page_html(HOSPITAL_RANK_URL.format('0', '0'))
     xpath = etree.HTML(html)
-
 
     clinic_format_url_list = []
 
@@ -307,132 +319,46 @@ def is_second_clinic_exist(first_id):
         return second_dic_list
 
 
-def get_reg_clinic_rank_id(str):
+def get_clinic_id_list(html):
     '''
-    use re to get clinic rank id
-    :param str:
-    :return: clinc_rank_id
-    '''
-    pattern = '/pc/hospitallist/0/'
-    clinc_rank_id = re.sub(pattern, '', str)
-    return clinc_rank_id
-
-def get_reg_clinic_name(str):
-    '''
-    use re to get clinic name
-    :param str:
+    get clinic id list from hospital detail list
+    :param html:
     :return:
     '''
-    pattern = '([\u4e00-\u9fa5]+)'
-    clinic_name = re.search(pattern, str).group()
-    return clinic_name
+    if not html:
+        return
+    # 判断页面科室暂无的情况
+    try:
+        if '暂无相关信息' in html:
+            # 日志记录
+            print("暂无相关信息")
+            return False
+    except AttributeError:
+        return False
 
-def get_reg_province_id(str):
-    '''
-    use re to get province id
-    :param str:
-    :return: province id
-    '''
-    pattern = '([\d+]+-[\d])'
-    province_id = re.search(pattern, str).group()
-    return province_id
+    xpath = etree.HTML(html)
+    row_clinic_id_list = xpath.xpath('//*[@id="clinic"]/li/a/@href')
+    clinic_id_list = []
+    # 循环遍历获取科室id
+    for i in range(len(row_clinic_id_list)):
+        clinic_id = get_reg_clinic_id(str(row_clinic_id_list[i]))
+        clinic_id_list.append(clinic_id)
 
-def get_reg_hospital_id(str):
-    '''
-    use re to get hospital id
-    :param str:
-    :return: hospital id
-    '''
-    pattern = re.compile("/pc/hospital/")
-    id_data = re.sub(pattern, '', str)
-    hospital_id = re.sub("/$", '', id_data)
-    return hospital_id
+    return clinic_id_list
 
-def get_reg_hospital_profile(str):
-    '''
-    use re to get hospital profile
-    :param str:
-    :return: hospital profile
-    '''
-    front_pattern = re.compile("^[\S{10}]+[\s*]+[\S*]+[\s*]+[\S*]+[\s*]+[\s*]")
-    front_reg = re.sub(front_pattern, '', str)
-    mid_pattern = re.compile('[\']+[,]+[\s]+[\']+[\\\\]+[u3000]+[\\\\]+[u3000]+[\d]*')
-    mid_reg = re.sub(mid_pattern, '', front_reg)
-    end_pattern = re.compile("\\\\+n+[\s*]+[\S*]+']$")
-    end_reg = re.sub(end_pattern, '', mid_reg)
-    return end_reg
 
-def get_reg_clinic_id(str):
-    '''
-    use re to get clinic id
-    :param str:
-    :return: clinic id
-    '''
-    pattern = re.compile("/pc/clinic/")
-    id_data = re.sub(pattern, '', str)
-    clinic_id = re.sub("/$", '', id_data)
-    return clinic_id
-
-def get_reg_rank_name(str):
-    '''
-    use re to get rank name
-    :param str:
-    :return: rank name
-    '''
-    pattern = re.compile('[排名第]+[\d]*$')
-    rank_name = re.sub(pattern, '', str)
-    return rank_name
-
-def get_reg_rank_level(str):
-    '''
-    use re to get rank level
-    :param str:
-    :return: rank level(int)
-    '''
-    rank_level = int(re.search('(\d)*$', str).group())
-    return rank_level
-
-def get_reg_clinic_profile(str):
-    '''
-    use re to get clinic profile
-    :param str:
-    :return: clinic profile
-    '''
-    front_pattern = re.compile("^[\S{10}]+[\s*]+[\S*]+[\s]*")
-    front_reg = re.sub(front_pattern, '', str)
-    mid_pattern = re.compile('[\']+[,]+[\s]+[\']+[\\\\]+[u3000]+[\\\\]+[u3000]+[\d]*')
-    mid_reg = re.sub(mid_pattern, '', front_reg)
-    end_pattern = re.compile("\\\\+n+[\s*]+[\S*]+']$")
-    end_reg = re.sub(end_pattern, '', mid_reg)
-    return end_reg
-
-def get_datetime():
-    time_now = datetime.datetime.today()
-    return time_now
 
 if __name__ == '__main__':
-    # html = get_page_html(BASE_URL)
-    # get_hospital_province_list(html)
-    # str = '/pc/hospital/040093b0ca34328b/'
-    # print(str)
-    # print(get_reg_hospital_id(str))
-    hospital_id = '3c7328db652e8dc0'
-    row_clinic_id = '/pc/clinic/00245b9d266dac6d-ab/'
-    row_rank = '全国综合排名第36'
-    hospital_clinic_id = '3c7328db652e8dc0-bj'
-    first_id = '/pc/hospitallist/0/fa/'
-    clinic_name = '\n            预防保健科\n          '
-    clinc_id = '/pc/hospitallist/0/mb'
-    print(get_reg_clinic_rank_id(clinc_id))
-    # is_second_clinic_exist(first_id)
-    # get_reg_clinic_name(clinic_name)
-    # get_hospital_clinic_base_info(hospital_clinic_id)
-    # print(get_reg_rank_level(row_rank))
-    # get_hospital_base_info(hospital_id)
-    # get_reg_hospital_profile(str)
-    # print(get_hospital_enter_doctor_info(hospital_id))
-    # get_hospital_enter_doctor_info(hospital_id)
-    # print(get_reg_clinic_id(row_clinic_id))
-    # get_clinic_format_url_list()
+    # base_url = 'https://chunyuyisheng.com/pc/hospital/a954126543a7ba9d/'
+    # hospital_id = 'a954126543a7ba9d'
+    # city = '唐山市'
+    # base_url = 'https://chunyuyisheng.com/pc/hospitals/'
+    url = 'https://chunyuyisheng.com/pc/hospital/00245b9d266dac6d/'
+    html = get_page_html(url)
+    hospital_id = '00245b9d266dac6d'
+    get_hospital_clinic_rank(hospital_id, html)
+
+
+
 
 

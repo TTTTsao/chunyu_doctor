@@ -1,4 +1,5 @@
 import sys
+import socket
 
 # to work well inside config module or outsize config module
 sys.path.append('..')
@@ -13,4 +14,6 @@ def create_all_table():
 
 
 if __name__ == "__main__":
+    host = socket.gethostname()
+    print(host)
     create_all_table()

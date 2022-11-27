@@ -2,6 +2,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
+from spider.page_parse.basic import is_404
 from spider.config import headers
 from spider.logger import crawler
 from spider.config.conf import (
@@ -37,25 +38,27 @@ def get_page_html(url):
             count += 1
             continue
 
-        '''
-        处理错误：
-        414：ip被封
-        404：url不存在
-        403：没有权限（账号被封）
-        需要login
-        需要proxy
-        需要login + cookie
-        '''
-
-        # 抓取到文本内容
+        # 抓取文本内容
         if resp.text:
             page = resp.text.encode('utf-8', 'ignore').decode('utf-8')
         else:
             count += 1
             continue
 
-        # 用redis存储抓取到url，然后返回page
-        # print(page)
+        # TODO 用redis存储抓取到url，然后返回page
+
+        #  404：url不存在
+        if is_404(page):
+            # crawler.warning('{} seems to be 404'.format(url))
+            return ''
+
+        # TODO 处理错误
+        #  414：ip被封
+        #  403：没有权限（账号被封）
+        #  需要login
+        #  需要proxy
+        #  需要login + cookie
+
         return page
 
     # 用redis存储抓取到url，然后返回null

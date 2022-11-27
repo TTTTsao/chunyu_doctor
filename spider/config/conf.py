@@ -26,3 +26,6 @@ def get_max_retries():
 
 def get_db_args():
     return cf.get('db')
+
+def get_max_home_page():
+    return cf.get('max_home_page')
