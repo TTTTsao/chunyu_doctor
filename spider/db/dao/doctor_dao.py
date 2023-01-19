@@ -69,3 +69,8 @@ class DoctorRewardOper(CommonOper):
     @classmethod
     def get_doctor_reward_by_doctor_id(cls, doctor_id):
         return db_session.query(DoctorReward).filter(DoctorReward.doctor_id == doctor_id).first()
+
+class DoctorIllnessOper(CommonOper):
+    @classmethod
+    def get_doctor_illness_by_doctor_id(cls, doctor_id):
+        return db_session.query(IllnessInfo).filter(IllnessInfo.doctor_id == doctor_id).first()

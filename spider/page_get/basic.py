@@ -1,21 +1,17 @@
 import requests
-from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 from spider.page_parse.basic import is_404
 from spider.config import headers
+# from spider.util.proxy import get_ip
 from spider.logger import crawler
 from spider.config.conf import (
     get_timeout, get_crawl_interal, get_excp_interal, get_max_retries)
-
-# base_url = 'https://chunyuyisheng.com/pc/doctors/0-0-0/'
 
 TIME_OUT = get_timeout()
 INTERAL = get_crawl_interal()
 MAX_RETRIES = get_max_retries()
 EXCP_INTERAL = get_excp_interal()
-# COOKIES = get_cookies()
-
 
 # Disable annoying InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -28,6 +24,7 @@ def get_page_html(url):
     '''
 
     count = 0
+    # proxy = get_ip()
     # 小于爬虫重试次数时
     while count < MAX_RETRIES:
         try :
@@ -55,6 +52,7 @@ def get_page_html(url):
         # TODO 处理错误
         #  414：ip被封
         #  403：没有权限（账号被封）
+        #  429: 过多请求
         #  需要login
         #  需要proxy
         #  需要login + cookie
@@ -64,5 +62,3 @@ def get_page_html(url):
     # 用redis存储抓取到url，然后返回null
     return ''
 
-# if __name__ == '__main__':
-#     get_clinic_html(base_url)

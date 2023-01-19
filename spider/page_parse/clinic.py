@@ -1,7 +1,6 @@
 import re
 
 from bs4 import BeautifulSoup
-from lxml import etree
 
 from spider.page_get.basic import get_page_html
 

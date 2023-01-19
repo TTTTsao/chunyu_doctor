@@ -1,4 +1,3 @@
-import time
 from .basic import Base
 from .tables import *
 from .tables import illness_info

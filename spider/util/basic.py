@@ -13,7 +13,3 @@ def trans_to_datetime(str):
     '''
     datetime_time = datetime.datetime.strptime(str, '%Y-%m-%d')
     return datetime_time
-
-if __name__ == '__main__':
-    time_str = '2022-11-09'
-    print(trans_to_datetime(time_str))
