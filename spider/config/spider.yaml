@@ -14,13 +14,13 @@ max_retries: 5                 # retry times for crawling
 
 # MySQL
 db:
-#    host: 10.22.32.29
-    host: 127.0.0.1
+    host: 10.22.32.29
+#    host: 127.0.0.1
     port: 3306
-    user: root
-    password: Zayn9296.
-#    user: guest
-#    password: guest87654321
+#    user: root
+#    password: Zayn9296.
+    user: guest
+    password: guest87654321
     db_name: chunyu_doctor
     db_type: mysql
 
