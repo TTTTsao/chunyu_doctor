@@ -150,11 +150,11 @@ def crawl_doctor_detail_info(doctor_id):
     '''
     print("正在抓取医生", doctor_id)
 
-    # crawl_doctor_auth_info(doctor_id)
-    # crawl_doctor_tag(doctor_id)
+    crawl_doctor_auth_info(doctor_id)
+    crawl_doctor_tag(doctor_id)
     crawl_doctor_service_info(doctor_id)
     crawl_doctor_price(doctor_id)
-    # crawl_doctor_description(doctor_id)
+    crawl_doctor_description(doctor_id)
     crawl_doctor_comment_label(doctor_id)
     crawl_illness_question(doctor_id)
     crawl_doctor_reward(doctor_id)
