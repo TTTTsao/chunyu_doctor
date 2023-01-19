@@ -37,8 +37,8 @@ def crawl_all_hospital_base_info():
             city = hospital[1]
 
             # 进入每个医院详情页
-            crawl_hospitall_clinic_rank(id)
-            crawl_hospital_base_info(id, city)
+            # crawl_hospitall_clinic_rank(id)
+            # crawl_hospital_base_info(id, city)
             crawl_hospital_clinic_enter_doctor(id)
             crawl_hospital_real_time_inquiry(id)
 
