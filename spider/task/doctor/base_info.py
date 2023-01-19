@@ -6,10 +6,8 @@ from spider.page_parse.doctor.base_info import *
 from spider.page_parse.doctor.img import *
 from spider.page_parse.hospital.basic import (get_hospital_province_list, get_hospital_list_from_province, get_clinic_id_list)
 
-from spider.logger import crawler, storage
 from spider.db.dao.doctor_dao import *
 from spider.config.conf import (get_max_home_page)
-
 
 BASE_URL = 'https://chunyuyisheng.com/pc/doctors/?page={}'
 DOCTOR_URL = 'https://www.chunyuyisheng.com/pc/doctor/{}'

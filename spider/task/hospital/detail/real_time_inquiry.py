@@ -12,18 +12,19 @@ def crawl_hospital_real_time_inquiry(hospital_id):
     '''
     url = HOSPITAL_DETAIL_URL.format(hospital_id)
     html = get_page_html(url)
-    # Start crawl and 开始爬虫-日志
+    # TODO crawl-info 正在抓取xx医院医生当前在线可咨询信息
     # crawler.info('the crawling url is {url}'.format(url=url))
 
     hospital_real_time_inquiry_data = get_hospital_real_time_inquiry(hospital_id, html)
     # 不存在
     if not hospital_real_time_inquiry_data:
-        # TODO 日志警告
+        # TODO parse-waring 日志警告 不存在医生当前在线可咨询信息
         return
     # 不存在于表
     if not HospitalRealTimeInquiryOper.get_hospital_realtime_inquiry_by_hospital_id(hospital_id):
-        # TODO 插入日志：新增
+        # TODO storage-info 插入日志：新增
         HospitalRealTimeInquiryOper.add_one(hospital_real_time_inquiry_data)
     else:
-        # TODO 日志：已存在并更新
+        # TODO storage-info 日志：已存在并更新
         HospitalRealTimeInquiryOper.add_one(hospital_real_time_inquiry_data)
+    # TODO storage-error 日志-插入失败

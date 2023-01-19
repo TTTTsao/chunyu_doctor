@@ -64,6 +64,7 @@ def get_doctor_base_info_from_clinic(html):
 
     # 判断页面有无医生
     if len(doctor_id_list) == 0:
+        # TODO parse-warning 日志-该科室没有医生
         print("该科室没有医生")
         return
 

@@ -13,12 +13,12 @@ def crawl_hospital_clinic_base_info(clinic_id):
     '''
     url = HOSPITAL_CLINIC_URL.format(clinic_id)
     html = get_page_html(url)
-    # Start crawl and 开始爬虫-日志
+    # TODO crawl-info 正在抓取xx科室基本信息
     # crawler.info('the crawling url is {url}'.format(url=url))
-    # 判断页面医生暂无的情况
+
     try:
         if '暂无相关信息' in html:
-            # 日志记录
+            # TODO crawl-warning 日志记录 页面科室暂无
             print("暂无相关信息")
             return
         elif is_404(html):
@@ -27,14 +27,15 @@ def crawl_hospital_clinic_base_info(clinic_id):
         return False
 
     hospital_clinic_base_info = get_hospital_clinic_base_info(clinic_id, html)
-    # 不存在
+
     if not hospital_clinic_base_info:
-        # TODO 日志警告
+        # TODO parse-warning 日志警告 不存在该科室信息
         return
     # 不存在于表
     if not HospitalClinicBaseInfoOper.get_hospital_clinic_base_info_by_clinic_id(clinic_id):
-        # TODO 插入日志：新增
+        # TODO storage-info 插入日志：新增
         HospitalClinicBaseInfoOper.add_one(hospital_clinic_base_info)
     else:
-        # TODO 日志：已存在并更新
+        # TODO storage-info 日志：已存在并更新
         HospitalClinicBaseInfoOper.add_one(hospital_clinic_base_info)
+    # TODO storage-error 日志-插入失败

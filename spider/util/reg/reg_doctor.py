@@ -37,7 +37,7 @@ def get_reg_price_type(str):
     :param str:
     :return:
     '''
-    pattern = re.compile("\(', '/次\)")
+    pattern = re.compile("\(")
     price_type = re.sub(pattern, '', str)
     return price_type
 
@@ -96,11 +96,11 @@ if __name__ == '__main__':
     row_doctor_id = '/pc/doctor/clinic_web_fa2e2aadbeb99583/'
     row_auth_time = '该医生已于2017年09月15日提交信息并通过认证审核。'
     row_followers = '已有563人关注'
-    row_price_type = "图文咨询(', '/次)"
+    row_price_type = "图文咨询("
     row_price_discount = '新用户享4折¥16.0'
     row_label_num = '[285]'
     row_reward_amount = '36元'
     doctor_name = "YAN ZI\xa0"
-    print(get_reg_doctor_name(doctor_name))
+    print(get_reg_price_type(row_price_type))
 
 

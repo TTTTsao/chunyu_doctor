@@ -1,5 +1,3 @@
-from bs4 import BeautifulSoup
-
 def is_404(html):
     try:
         # doctor detail info is deleted
@@ -29,3 +27,4 @@ def is_page_has_no_doctor_nums(html, clinic_doctor_nums):
             return True
     except AttributeError:
         return False
+

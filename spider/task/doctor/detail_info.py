@@ -13,7 +13,6 @@ from spider.task.doctor.detail.service_info import crawl_doctor_service_info
 from spider.task.doctor.detail.description import crawl_doctor_description
 from spider.page_parse.hospital.basic import (get_hospital_province_list, get_hospital_list_from_province, get_clinic_id_list)
 
-from spider.logger import crawler, storage
 from spider.config.conf import (get_max_home_page)
 
 BASE_URL = 'https://chunyuyisheng.com/pc/doctors/?page={}'
@@ -91,7 +90,8 @@ def crawl_doctor_detail_info_from_clinic(clinic_id):
         max_page = math.ceil(int(clinic_doctor_nums[0]) / 20)
         cur_page = 1
         while cur_page <= max_page:
-            print("正在爬取,", clinic_id, "第", cur_page, "页数据")
+            # TODO crawl-info
+            # print("正在爬取,", clinic_id, "第", cur_page, "页数据")
             url = HOSPITAL_CLINIC_PAGE_URL.format(clinic_id, cur_page)
             html = get_page_html(url)
             xpath = etree.HTML(html)
@@ -129,17 +129,15 @@ def crawl_active_doctor_detail_info():
 
         for i in range(len(doctor_id_list)):
             doctor_id = doctor_id_list[i]
-            print("开始抓取", doctor_id, "的详情页")
+            # print("开始抓取", doctor_id, "的详情页")
             crawl_doctor_auth_info(doctor_id)
             crawl_doctor_tag(doctor_id)
             crawl_doctor_service_info(doctor_id)
             crawl_doctor_price(doctor_id)
             crawl_doctor_description(doctor_id)
             crawl_doctor_comment_label(doctor_id)
-            # TODO 完善抓取病情页方法
             crawl_illness_question(doctor_id)
             crawl_doctor_reward(doctor_id)
-            print("抓取完毕")
         # TODO 增加发生错误，存储该doctor_id用于稍后重新抓取
 
         cur_page += 1
@@ -152,15 +150,12 @@ def crawl_doctor_detail_info(doctor_id):
     '''
     print("正在抓取医生", doctor_id)
 
-    # crawl_doctor_auth_info(doctor_id)
-    # crawl_doctor_tag(doctor_id)
-    # crawl_doctor_service_info(doctor_id)
-    # crawl_doctor_price(doctor_id)
-    # crawl_doctor_description(doctor_id)
-    # crawl_doctor_comment_label(doctor_id)
-    # TODO 完善抓取病情页方法
+    crawl_doctor_auth_info(doctor_id)
+    crawl_doctor_tag(doctor_id)
+    crawl_doctor_service_info(doctor_id)
+    crawl_doctor_price(doctor_id)
+    crawl_doctor_description(doctor_id)
+    crawl_doctor_comment_label(doctor_id)
     crawl_illness_question(doctor_id)
-    # crawl_doctor_reward(doctor_id)
+    crawl_doctor_reward(doctor_id)
 
-if __name__ == '__main__':
-    crawl_all_doctor_detail_info()

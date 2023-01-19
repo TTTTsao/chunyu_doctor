@@ -19,7 +19,7 @@ def get_doctor_reward(doctor_id, html):
 
     # 判断是否有【心意墙】板块
     if len(reward_content_list) == 0:
-        # 警告日志：没有心意墙
+        # TODO parse-warning 日志：没有心意墙
         return None
     else:
         for i in range(len(reward_content_list)):

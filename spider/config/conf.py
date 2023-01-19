@@ -29,3 +29,6 @@ def get_db_args():
 
 def get_max_home_page():
     return cf.get('max_home_page')
+
+def get_proxy_url():
+    return cf.get('proxy_url')

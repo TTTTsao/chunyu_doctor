@@ -17,7 +17,7 @@ def get_hospital_enter_doctor_info(hospital_id, html):
     # 判断页面科室暂无的情况
     try:
         if '暂无相关信息' in html:
-            # 日志记录
+            # TODO parse-warning 暂无该科室信息日志记录
             print("暂无相关信息")
             return False
     except AttributeError:
@@ -25,7 +25,6 @@ def get_hospital_enter_doctor_info(hospital_id, html):
 
     row_clinic_id_list = xpath.xpath('//*[@id="clinic"]/li/a/@href')
     row_enter_nums_list = xpath.xpath('//*[@id="clinic"]/li/span/i/text()')
-
 
     # 判断该科室是否为0人，如果是0人需要返回0
     for i in range(len(row_clinic_id_list)):
@@ -35,7 +34,7 @@ def get_hospital_enter_doctor_info(hospital_id, html):
         if len(row_clinic_id_list) > len(row_enter_nums_list):
             # 有科室为0人
             if ( i - len(row_enter_nums_list) ) > -1:
-                # 进入为0人的科室
+                # 为0人的科室
                 hospital_enter_data.hospital_clinic_amount = 0
             else:
                 hospital_enter_data.hospital_clinic_amount = int(row_enter_nums_list[i])

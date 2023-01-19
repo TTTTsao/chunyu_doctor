@@ -18,6 +18,8 @@ def get_illness_datas(doctor_id, type, html):
 
     illness_datas = []
     problem_list = get_illness_problem_list(html)
+    if not problem_list:
+        return
     for problem in problem_list:
         illness_data = IllnessInfo()
         illness_data.doctor_id = doctor_id
@@ -40,10 +42,14 @@ def get_illness_hot_consults(html):
     if not html:
         return
     cont = json.loads(html).get('hot_consults')
-    hot_consults = []
-    for item in cont:
-        hot_consults.append(item["keywords"])
-    return hot_consults
+    if is_cont_not_none(cont):
+        hot_consults = []
+        for item in cont:
+            hot_consults.append(item["keywords"])
+        return hot_consults
+    else:
+        return False
+
 
 def get_illness_problem_list(html):
     '''
@@ -54,26 +60,29 @@ def get_illness_problem_list(html):
     if not html:
         return
     cont = json.loads(html).get('problem_list')
-    return cont
+    if is_cont_not_none(cont):
+        return cont
+    else:
+        return False
 
 
 def is_illness_none(html):
     if not html:
         return
     cont = json.loads(html).get('hot_consults')
-    print(cont)
-    print(type(cont))
-    print(cont is None)
-    if (cont is None):
-        print("cont's type is NoneType")
+    if is_cont_not_none(cont):
+        return True if (len(cont) == 0) else False
+    else:
         return False
-    return True if (len(cont) == 0) else False
 
 def has_more_page(html):
     if not html:
         return
     cont = json.loads(html).get("has_more_page")
-    return cont
+    if is_cont_not_none(cont):
+        return cont
+    else:
+        return False
 
 def get_illness_clinic_id(question_id):
     '''
@@ -86,8 +95,12 @@ def get_illness_clinic_id(question_id):
     xpath = etree.HTML(html)
     try:
         clinic_id = xpath.xpath("//div[@class='bread-crumb-spacial']/a/text()")[0]
-    except IndexError: return
-    except AttributeError: return
+    except IndexError:
+        # TODO parse-error
+        return
+    except AttributeError:
+        # TODO parse-error
+        return
     return clinic_id
 
 def get_illness_html(question_id):
@@ -100,13 +113,18 @@ def get_illness_html(question_id):
     html = get_page_html(url)
     soup = BeautifulSoup(html, 'html.parser')
     try:
-        illness_html = str(soup.find_all(attrs={'class': 'problem-detail-wrap'}))
+        illness_row_html = str(soup.find_all(attrs={'class': 'context-left'}))
+        illness_html = illness_row_html.replace("\t", '').replace("\n", '').replace(" ", '')
     except:
+        # TODO  parse-warning日志-illness detail html出现问题
         print("illness html goes wrong")
         return
     return illness_html
 
-if __name__ == '__main__':
-    url = 'https://www.chunyuyisheng.com/pc/doctor/clinic_web_d675c6211d0f2900/qa/?is_json=1&tag=&page_count=20&page=1'
-    html = get_page_html(url)
-    is_illness_none(html)
+def is_cont_not_none(cont):
+    if (cont is None):
+        # TODO parse-warning日志-illness json页无信息（NoneType）
+        print("cont's type is NoneType")
+        return False
+    else:
+        return True

@@ -24,12 +24,14 @@ def crawl_all_hospital_base_info():
 
     # 遍历获得每个省份下的医院id：get_hospital_list_from_province
     for i in range(len(province_list)):
+        # TODO crawl-info 日志 正在抓取xx地区的医院信息
         print('正在抓取第', i, "页", province_list[i])
         province_url = HOSPITAL_URL.format(province_list[i])
         hospital_list_html = get_page_html(province_url)
 
         hospital_list = get_hospital_list_from_province(hospital_list_html)
         for hospital in hospital_list:
+            # TODO crawl-info 正在抓取xx医院的信息
             print("正在抓取医院", hospital[0])
             id = hospital[0]
             city = hospital[1]
@@ -40,6 +42,7 @@ def crawl_all_hospital_base_info():
             crawl_hospital_clinic_enter_doctor(id)
             crawl_hospital_real_time_inquiry(id)
 
+        # TODO crawl-info xxx地区医院信息已抓取完毕
         print("第", i, "页数据抓取完毕")
 
 def crawl_all_hospital_clinic_base_info():
@@ -65,12 +68,14 @@ def crawl_all_hospital_clinic_base_info():
 
     # 2 遍历获得每个省份下的医院id：get_hospital_list_from_province
     for i in range(len(province_list)):
+        # TODO crawl-info 日志 正在抓取xx地区的医院科室信息
         print('正在抓取第', i, "页", province_list[i])
         province_url = HOSPITAL_URL.format(province_list[i])
         hospital_list_html = get_page_html(province_url)
 
         hospital_list = get_hospital_list_from_province(hospital_list_html)
         for hospital in hospital_list:
+            # TODO crawl-info 日志 正在抓取xx医院信息
             print("正在抓取医院", hospital[0])
             id = hospital[0]
 
@@ -81,13 +86,16 @@ def crawl_all_hospital_clinic_base_info():
             # 4 获取clinic id并遍历
             clinic_id_list = get_clinic_id_list(html)
             if not clinic_id_list:
+                # TODO crawl-warning 该页面科室列表信息为空
                 print("clinic_id_list", clinic_id_list)
                 # 日志警告
             else:
                 for clinic_id in clinic_id_list:
+                    # TODO crawl-info 正在抓取xx科室信息
                     print("正在抓取科室", clinic_id)
                     crawl_hospital_clinic_base_info(clinic_id)
 
+        # TODO crawl-info xxx地区医院科室信息已抓取完毕
         print("第", i, "页数据抓取完毕")
 
 def crawl_hospital_by_province_list(province_list):
@@ -111,11 +119,12 @@ def crawl_hospital_by_province(province_id):
     '''
     province_url = HOSPITAL_URL.format(province_id)
     hospital_list_html = get_page_html(province_url)
-    # Start crawl and 开始爬虫-日志
+    # TODO crawl-info 日志 开始抓取xx地区医院信息
     # crawler.info('the crawling url is {url}'.format(url=url))
 
     hospital_list = get_hospital_list_from_province(hospital_list_html)
     for hospital in hospital_list:
+        # TODO crawl-info 日志 开始抓取xx医院
         print("正在抓取医院", hospital[0])
         id = hospital[0]
         city = hospital[1]
