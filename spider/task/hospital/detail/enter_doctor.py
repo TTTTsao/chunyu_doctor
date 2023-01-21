@@ -1,9 +1,12 @@
 from spider.page_get.basic import get_page_html
 from spider.db.dao.hospital_dao import HospitalClinicEnterDoctorOper
 from spider.page_parse.hospital.enter_doctor_info import get_hospital_enter_doctor_info
+from loguru import logger
+from spider.decorators.crawl_decorator import crawl_decorator
 
 HOSPITAL_DETAIL_URL = 'https://chunyuyisheng.com/pc/hospital/{}'
 
+@crawl_decorator
 def crawl_hospital_clinic_enter_doctor(hospital_id):
     '''
     根据hospital_id爬取医院医生入驻信息
@@ -12,20 +15,13 @@ def crawl_hospital_clinic_enter_doctor(hospital_id):
     '''
     url = HOSPITAL_DETAIL_URL.format(hospital_id)
     html = get_page_html(url)
-    # TODO crawl-info 正在抓取xx医院医生入驻信息
-    # crawler.info('the crawling url is {url}'.format(url=url))
+    logger.info("正在抓取 {} 医院医生入驻信息".format(hospital_id))
+
 
     hospital_enter_data = get_hospital_enter_doctor_info(hospital_id, html)
     # 不存在
     if not hospital_enter_data:
-        # TODO parse-waring 日志警告 该医院不存在入驻医生信息
+        logger.warning("{} 医院不存在入驻医生信息".format(hospital_id))
         return
 
-    # 不存在于表
-    if not HospitalClinicEnterDoctorOper.get_hosital_clinic_enter_doctor_by_hospital_id(hospital_id):
-        # TODO storage-info 插入日志：新增
-        HospitalClinicEnterDoctorOper.add_all(hospital_enter_data)
-    else:
-        # TODO storage-info 日志：已存在并更新
-        HospitalClinicEnterDoctorOper.add_all(hospital_enter_data)
-    # TODO storage-error 日志-插入失败
+    HospitalClinicEnterDoctorOper.add_all(hospital_enter_data)

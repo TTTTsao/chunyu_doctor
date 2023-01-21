@@ -2,7 +2,9 @@ from lxml import etree
 
 from spider.util.reg.reg_hospital import (get_reg_rank_name, get_reg_rank_level)
 from spider.db.models import HospitalClinicRank
+from spider.decorators.parse_decorator import parse_decorator
 
+@parse_decorator(False)
 def get_hospital_clinic_rank(hospital_id, html):
     '''
     get clinic rank info from hospital detail page
@@ -10,15 +12,16 @@ def get_hospital_clinic_rank(hospital_id, html):
     :return: clinic rank info data
     '''
     if not html:
-        return
+        return False
     xpath = etree.HTML(html)
     hospital_clinic_rank_datas = []
-    row_rank_data_list = xpath.xpath("//li[@class='hospital-rank']/a/text()")
-    print(row_rank_data_list)
+    try:
+        row_rank_data_list = xpath.xpath("//li[@class='hospital-rank']/a/text()")
+    except Exception:
+        return False
 
     # 判断是否存在排名信息
     if len(row_rank_data_list) == 0:
-        print("无医院排名信息")
         return
 
     for i in range(len(row_rank_data_list)):

@@ -1,11 +1,13 @@
-from spider.page_get.basic import get_page_html
 from spider.page_parse.doctor.illness import *
 from spider.db.dao.doctor_dao import DoctorIllnessOper
+from spider.decorators.crawl_decorator import crawl_decorator
+from loguru import logger
 
 DOCTOR_URL = 'https://www.chunyuyisheng.com/pc/doctor/{}'
 ILLNESS_BASE_URL = 'https://www.chunyuyisheng.com/pc/doctor/{}/qa/?is_json=1&tag=&page_count=20&page=1'
 ILLNESS_AJAX_URL = 'https://www.chunyuyisheng.com/pc/doctor/{}/qa/?is_json=1&page_count=20&page={}&tag={}'
 
+@crawl_decorator
 def crawl_illness_question(doctor_id):
     '''
     抓取医生好评问题信息（dr_id、ques_id、clinic_id、type、time、title、detail_html）
@@ -19,10 +21,9 @@ def crawl_illness_question(doctor_id):
     url = ILLNESS_BASE_URL.format(doctor_id)
     html = get_page_html(url)
 
-    # TODO crawl-info 正在抓取xx医生好评问题信息
-    # crawler.info('the crawling url is {url}'.format(url=url))
+    logger.info("正在抓取 {} 医生的好评问题信息".format(doctor_id))
     if is_illness_none(html):
-        # TODO crawl-warning 该医生不存在好评问题数据
+        logger.warning("{} 医生不存在好评问题信息".format(doctor_id))
         return
     hot_consults = get_illness_hot_consults(html)
     if not hot_consults:
@@ -38,17 +39,11 @@ def crawl_illness_question(doctor_id):
 
             # 不存在
             if not illness_datas:
-                # TODO parse-waring 日志警告 不存在好评问题数据
+                logger.warning("无法获取 {} 医生的好评问题信息".format(doctor_id))
                 return
 
-            if not DoctorIllnessOper.get_doctor_illness_by_doctor_id(doctor_id):
-                # TODO storage-info 插入日志：新增
-                DoctorIllnessOper.add_all(illness_datas)
-            else:
-                # TODO storage-info 日志：已存在并更新
-                DoctorIllnessOper.add_all(illness_datas)
-            # TODO storage-error 日志-插入失败
+            DoctorIllnessOper.add_all(illness_datas)
 
             cur_page += 1
             flag = has_more_page(cur_html)
-        # TODO crawl-info 该医生好评问题数据抓取完毕 共计xx页
+        logger.info("{} 医生好评问题完成抓取，共计 {} 页".format(doctor_id, cur_page))

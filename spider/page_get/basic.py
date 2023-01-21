@@ -1,8 +1,14 @@
 import time
+import sys
+import os
+from loguru import logger
 
+from spider.config.conf import get_logger_logging_format
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from loguru import logger
 
+from spider.decorators.crawl_decorator import timeout_decorator
 from spider.page_parse.basic import is_404
 from spider.config import headers
 from spider.util.proxy.get_ip import getIP
@@ -17,42 +23,52 @@ EXCP_INTERAL = get_excp_interal()
 # Disable annoying InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+logging_format = get_logger_logging_format()
+
+logger.add(sys.stderr, level="INFO", format=logging_format)
+logger.remove()
+logger.add('spider/logs/crawl_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/crawl_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/crawl_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
+
+@timeout_decorator
 def get_page_html(url):
     '''
     获取网页的html文本
     :param url: url to crawl
     :return: responseonse text, when a exception is raised, return ''
     '''
-
     count = 0
     proxies = getIP()
     # 小于爬虫重试次数时
     while count < MAX_RETRIES:
         try :
-            # TODO 记录当前爬取次数：info
-            response = requests.get(url, headers=headers, timeout=TIME_OUT, verify=False, proxies=proxies)
+            logger.info("第 {} 次爬取 url {}, 当前代理为 {}".format(count, url, proxies))
+            response = requests.get(url, headers=headers, timeout=TIME_OUT, verify=False, proxies=proxies, stream=True)
             if response != 200: check_response(response, proxies)
         except(requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError, AttributeError) as e:
-            # TODO 警告日志记录：warning
-            # crawler.warning('Excepitons are raised when crawling {}.Here are details:{}'.format(url, e))
+            logger.warning("爬取 {} 时出现异常 {}".format(url, e))
             count += 1
             continue
 
         # 抓取文本内容
-        if response.text:
-            page = response.text.encode('utf-8', 'ignore').decode('utf-8')
-        else:
-            count += 1
-            continue
+        try:
+            if response.text:
+                page = response.text.encode('utf-8', 'ignore').decode('utf-8')
+                response.close()
+            else:
+                count += 1
+                response.close()
+                continue
+        except Exception as e:
+            logger.error("获取 {} 响应text 时出现异常 {}".format(url, e))
+            response.close()
+            return ''
         #  页面不存在
         if is_404(page):
-            # TODO 警告日志记录：warning
-            # crawler.warning('{} seems to be 404'.format(url))
+            logger.warning("{} 为 404 页面".format(url))
             return ''
-
         return page
-    # TODO 错误日志记录：error-完成最大爬取尝试次数仍失败
-
     return ''
 
 def check_response(response, proxies):
@@ -63,19 +79,22 @@ def check_response(response, proxies):
     :return:
     '''
     if response.status_code == 403:
+        logger.warning("status_code:403, proxies:%s 没有权限" % proxies)
         raise Exception("status_code:403, proxies:%s 没有权限" % proxies)
     elif response.status_code == 414:
+        logger.warning("status_code:414, proxies:%s 被封禁" % proxies)
         raise Exception("status_code:414, proxies:%s 被封禁" % proxies)
     elif response.status_code == 418:
-        # TODO 警告日志
+        logger.warning("status_code:418, proxies:%s 被反爬" % proxies)
         time.sleep(EXCP_INTERAL)
         raise Exception("status_code:418, proxies:%s 被反爬" % proxies)
     elif response.status_code == 449:
+        logger.warning("status_code:449, proxies:%s 被认为是海外IP" % proxies)
         raise Exception("status_code:449, proxies:%s 被认为是海外IP" % proxies)
     elif response.status_code == 429:
+        logger.warning("status_code:429, proxies:%s 被认为请求频繁" % proxies)
         time.sleep(EXCP_INTERAL)
         raise Exception("status_code:429, proxies:%s 被认为请求频繁" % proxies)
-
 
 
 if __name__ == '__main__':

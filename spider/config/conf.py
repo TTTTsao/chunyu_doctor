@@ -32,3 +32,9 @@ def get_max_home_page():
 
 def get_proxy_url():
     return cf.get('proxy_url')
+
+def get_logger_logging_format():
+    return cf.get('logging_format')
+
+def get_thread_nums():
+    return cf.get('thread_nums')

@@ -2,9 +2,11 @@ from decimal import Decimal
 
 from spider.db.models import DoctorServiceInfo
 from spider.util.reg.reg_doctor import get_reg_followers
+from spider.decorators.parse_decorator import parse_decorator
 
 from lxml import etree
 
+@parse_decorator(False)
 def get_doctor_service_info(doctor_id, html):
     '''
     从医生页面获取服务信息
@@ -23,8 +25,8 @@ def get_doctor_service_info(doctor_id, html):
         peer_recognization = xpath.xpath("//ul[@class='doctor-data']/li[3]/span[1]/text()")[0]
         patient_praise_num = xpath.xpath("//ul[@class='doctor-data']/li[4]/span[1]/text()")[0]
         followers = xpath.xpath("//div[@class='wexin-qr-code']//div[@class='footer-des']/text()")[0]
-    # TODO 1.将该错误记录于日志 2.记录该doctor_id用于后续重新尝试爬取
-    except IndexError: return
+    except IndexError:
+        return False
 
     doctor_service_data.doctor_serve_followers = get_reg_followers(str(followers))
 

@@ -2,7 +2,9 @@ from lxml import etree
 
 from spider.util.reg.reg_hospital import get_reg_clinic_id
 from spider.db.models import HospitalClinicEnterDoctor
+from spider.decorators.parse_decorator import parse_decorator
 
+@parse_decorator(False)
 def get_hospital_enter_doctor_info(hospital_id, html):
     '''
     get hospital enter doctor info from detail page
@@ -10,21 +12,22 @@ def get_hospital_enter_doctor_info(hospital_id, html):
     :return: hospital_enter_doctor_info data
     '''
     if not html:
-        return
+        return False
     xpath = etree.HTML(html)
     hospital_enter_datas = []
 
     # 判断页面科室暂无的情况
     try:
         if '暂无相关信息' in html:
-            # TODO parse-warning 暂无该科室信息日志记录
-            print("暂无相关信息")
             return False
     except AttributeError:
         return False
 
-    row_clinic_id_list = xpath.xpath('//*[@id="clinic"]/li/a/@href')
-    row_enter_nums_list = xpath.xpath('//*[@id="clinic"]/li/span/i/text()')
+    try:
+        row_clinic_id_list = xpath.xpath('//*[@id="clinic"]/li/a/@href')
+        row_enter_nums_list = xpath.xpath('//*[@id="clinic"]/li/span/i/text()')
+    except Exception:
+        return False
 
     # 判断该科室是否为0人，如果是0人需要返回0
     for i in range(len(row_clinic_id_list)):

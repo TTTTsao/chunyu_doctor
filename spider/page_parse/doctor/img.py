@@ -1,8 +1,10 @@
 from spider.db.models import DoctorImg
 from spider.util.reg.reg_doctor import get_reg_doctor_id
+from spider.decorators.parse_decorator import parse_decorator
 
 from lxml import etree
 
+@parse_decorator(False)
 def get_active_doctor_img(html):
     '''
     get active doctor img info data
@@ -11,7 +13,7 @@ def get_active_doctor_img(html):
     :return:
     '''
     if not html:
-        return
+        return False
 
     doctor_img_datas = []
     xpath = etree.HTML(html)
@@ -28,6 +30,7 @@ def get_active_doctor_img(html):
 
     return doctor_img_datas
 
+@parse_decorator
 def get_doctor_img_from_clinic(html):
     '''
     get doctor img info from clinic page
@@ -35,10 +38,14 @@ def get_doctor_img_from_clinic(html):
     :param html:
     :return:
     '''
-    if not html: return
+    if not html:
+        return False
     xpath = etree.HTML(html)
-    doctor_id_list = xpath.xpath("//div[@class='avatar-wrap']/a/@href")
-    doctor_img_url_list = xpath.xpath("//div[@class='avatar-wrap']/a/img/@src")
+    try:
+        doctor_id_list = xpath.xpath("//div[@class='avatar-wrap']/a/@href")
+        doctor_img_url_list = xpath.xpath("//div[@class='avatar-wrap']/a/img/@src")
+    except Exception:
+        return False
 
     # 判断页面有无医生
     if len(doctor_id_list) == 0: return

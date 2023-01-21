@@ -1,9 +1,11 @@
 import json
 
 from spider.db.models import DoctorTag
+from spider.decorators.parse_decorator import parse_decorator
 
 from lxml import etree
 
+@parse_decorator(False)
 def get_doctor_tag(doctor_id, html):
     '''
     从医生页面获取标签信息
@@ -11,13 +13,18 @@ def get_doctor_tag(doctor_id, html):
     :param html:
     :return:
     '''
-    if not html: return
+    if not html:
+        return False
     doctor_tag = DoctorTag()
     xpath = etree.HTML(html)
 
     doctor_tag.doctor_id = doctor_id
-    tag_content_dict = {}
-    label_list = xpath.xpath("/html/body/div[4]/div[1]/div[1]/div/div[2]/div[3]/span/text()")
+    try:
+        tag_content_dict = {}
+        label_list = xpath.xpath("/html/body/div[4]/div[1]/div[1]/div/div[2]/div[3]/span/text()")
+    except Exception:
+        return False
+
     # 判断有几个标签
     for i in range(len(label_list)):
         label_name = 'label'+str(i+1)

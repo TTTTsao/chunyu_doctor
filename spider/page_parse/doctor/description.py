@@ -1,8 +1,9 @@
 from spider.db.models import DoctorDescription
 from spider.util.reg.reg_doctor import get_reg_doctor_profile
-
+from spider.decorators.parse_decorator import parse_decorator
 from lxml import etree
 
+@parse_decorator(False)
 def get_doctor_description(doctor_id, html):
     '''
     从医生页面获取个人简介信息

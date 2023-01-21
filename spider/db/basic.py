@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 from spider.config.conf import get_db_args
+from contextlib import contextmanager
 
 
 def get_engine():
@@ -16,6 +17,16 @@ def get_engine():
     engine = create_engine(connect_str, encoding='utf-8')
     return engine
 
+@contextmanager
+def session_scope():
+    session = Session()
+    try:
+        yield session
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 eng = get_engine()
 Base = declarative_base()

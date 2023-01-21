@@ -1,9 +1,23 @@
 from spider.db.models import DoctorAuthInfo
 from spider.util.reg.reg_doctor import get_reg_auth_time
 from spider.util.reg.reg_hospital import (get_reg_hospital_id, get_reg_clinic_id)
+from spider.decorators.parse_decorator import parse_decorator
 
 from lxml import etree
 
+import sys
+from loguru import logger
+
+from spider.config.conf import get_logger_logging_format
+logging_format = get_logger_logging_format()
+
+logger.add(sys.stderr, level="INFO", format=logging_format)
+logger.add('spider/logs/parse_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/parse_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/parse_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
+
+
+@parse_decorator(False)
 def get_doctor_auth_info(doctor_id, html):
     '''
     从医生页面获取认证信息
@@ -11,7 +25,8 @@ def get_doctor_auth_info(doctor_id, html):
     :param html:
     :return:
     '''
-    if not html: return
+    if not html:
+        return False
 
     xpath = etree.HTML(html)
     doctor_auth_info = DoctorAuthInfo()
@@ -22,8 +37,9 @@ def get_doctor_auth_info(doctor_id, html):
         auth_grade = xpath.xpath("//div[@class='doctor-info-item']//div[@class='detail']/div[1]/span[2]/text()")[0]
         auth_time = xpath.xpath("//div[@class='tip-inner']//div[@class='content-wrap']/div[3]/div[2]/text()")[0]
         auth_status = xpath.xpath("//div[@class='doctor-info-item']//div[@class='detail']/div[1]/span[3]/text()")[0]
-    # TODO 1.将该错误记录于日志 2.记录该doctor_id用于后续重新尝试爬取
-    except IndexError: return
+    except IndexError as e:
+        logger.error("解析 {} 医生认证信息错误，详情：{}".format(doctor_id, e))
+        return False
 
     doctor_auth_info.doctor_auth_hospital_id = get_reg_hospital_id(str(hospital_id))
     doctor_auth_info.doctor_auth_clinic_id = get_reg_clinic_id(str(clinic_id))
@@ -35,4 +51,7 @@ def get_doctor_auth_info(doctor_id, html):
     else:
         doctor_auth_info.doctor_auth_status = 0
 
-    return doctor_auth_info
+    if not doctor_auth_info:
+        return False
+    else:
+        return doctor_auth_info

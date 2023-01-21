@@ -2,9 +2,11 @@ from decimal import Decimal
 
 from spider.db.models import DoctorPrice
 from spider.util.reg.reg_doctor import (get_reg_price_type, get_reg_price_discount)
+from spider.decorators.parse_decorator import parse_decorator
 
 from lxml import etree
 
+@parse_decorator(False)
 def get_doctor_price(doctor_id, html):
     '''
     从医生页面获取价格信息
@@ -12,13 +14,17 @@ def get_doctor_price(doctor_id, html):
     :param html:
     :return:
     '''
-    if not html: return
+    if not html:
+        return False
     doctor_price_data = DoctorPrice()
     doctor_price_data.doctor_id = doctor_id
     xpath = etree.HTML(html)
-    price = xpath.xpath("/html/body/div[4]/div[1]/a/div[1]/span/text()")
-    price_type = xpath.xpath("/html/body/div[4]/div[1]/a/div[1]/text()")
-    discount = xpath.xpath("/html/body/div[4]/div[1]/a/span/text()")
+    try:
+        price = xpath.xpath("/html/body/div[4]/div[1]/a/div[1]/span/text()")
+        price_type = xpath.xpath("/html/body/div[4]/div[1]/a/div[1]/text()")
+        discount = xpath.xpath("/html/body/div[4]/div[1]/a/span/text()")
+    except Exception as e:
+        return False
 
     # 判断有无价格信息
     if len(price) == 0: doctor_price_data.doctor_price_type = '暂无问诊服务'

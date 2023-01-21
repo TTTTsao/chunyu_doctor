@@ -4,9 +4,11 @@ from bs4 import BeautifulSoup
 from spider.page_get.basic import get_page_html
 from spider.db.models import IllnessInfo
 from spider.util.basic import trans_to_datetime
+from spider.decorators.parse_decorator import parse_decorator
 
 ILLNESS_DETAIL_URL = 'https://www.chunyuyisheng.com/pc/qa/{}'
 
+@parse_decorator(False)
 def get_illness_datas(doctor_id, type, html):
     '''
     从ajax页抓取illness信息
@@ -33,6 +35,7 @@ def get_illness_datas(doctor_id, type, html):
         illness_datas.append(illness_data)
     return illness_datas
 
+@parse_decorator
 def get_illness_hot_consults(html):
     '''
     从ajax页获取illness hot consults
@@ -40,7 +43,7 @@ def get_illness_hot_consults(html):
     :return:
     '''
     if not html:
-        return
+        return False
     cont = json.loads(html).get('hot_consults')
     if is_cont_not_none(cont):
         hot_consults = []
@@ -50,7 +53,7 @@ def get_illness_hot_consults(html):
     else:
         return False
 
-
+@parse_decorator
 def get_illness_problem_list(html):
     '''
     从ajax页获取illness problem list
@@ -65,7 +68,7 @@ def get_illness_problem_list(html):
     else:
         return False
 
-
+@parse_decorator
 def is_illness_none(html):
     if not html:
         return
@@ -74,6 +77,7 @@ def is_illness_none(html):
         return True if (len(cont) == 0) else False
     else:
         return False
+
 
 def has_more_page(html):
     if not html:
@@ -84,6 +88,7 @@ def has_more_page(html):
     else:
         return False
 
+@parse_decorator
 def get_illness_clinic_id(question_id):
     '''
     从ajax页获取illness clinic id
@@ -96,13 +101,12 @@ def get_illness_clinic_id(question_id):
     try:
         clinic_id = xpath.xpath("//div[@class='bread-crumb-spacial']/a/text()")[0]
     except IndexError:
-        # TODO parse-error
-        return
+        return False
     except AttributeError:
-        # TODO parse-error
-        return
+        return False
     return clinic_id
 
+@parse_decorator
 def get_illness_html(question_id):
     '''
     从ajaz页获取illness html
@@ -116,15 +120,12 @@ def get_illness_html(question_id):
         illness_row_html = str(soup.find_all(attrs={'class': 'context-left'}))
         illness_html = illness_row_html.replace("\t", '').replace("\n", '').replace(" ", '')
     except:
-        # TODO  parse-warning日志-illness detail html出现问题
-        print("illness html goes wrong")
-        return
+        return False
     return illness_html
 
+@parse_decorator
 def is_cont_not_none(cont):
     if (cont is None):
-        # TODO parse-warning日志-illness json页无信息（NoneType）
-        print("cont's type is NoneType")
         return False
     else:
         return True

@@ -4,15 +4,18 @@ from sqlalchemy.exc import InvalidRequestError
 
 from spider.db.basic import db_session
 from spider.db.models import *
+from spider.decorators.storage_decorator import db_commit_decorator
 
 
 class CommonOper:
     @classmethod
+    @db_commit_decorator
     def add_one(cls, data):
         db_session.add(data)
         db_session.commit()
 
     @classmethod
+    @db_commit_decorator
     def add_all(cls, datas):
         try:
             db_session.add_all(datas)

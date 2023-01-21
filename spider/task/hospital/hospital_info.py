@@ -1,3 +1,4 @@
+import sys
 from spider.page_get.basic import get_page_html
 from spider.task.hospital.detail.hospital_base_info import crawl_hospital_base_info
 from spider.task.hospital.detail.hospital_clinic_base_info import crawl_hospital_clinic_base_info
@@ -7,44 +8,61 @@ from spider.task.hospital.detail.hospital_clinic_rank import crawl_hospitall_cli
 from spider.page_parse.hospital.basic import (get_hospital_province_list,
                                               get_hospital_list_from_province,
                                               get_clinic_id_list)
+from spider.config.conf import get_logger_logging_format
+logging_format = get_logger_logging_format()
+from loguru import logger
+from spider.decorators.crawl_decorator import crawl_decorator
+
+logger.add(sys.stderr, level="INFO", format=logging_format)
+logger.add('spider/logs/crawl_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/crawl_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/crawl_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
 
 
 BASE_URL = 'https://chunyuyisheng.com/pc/hospitals/'
 HOSPITAL_URL = 'https://chunyuyisheng.com/pc/hospitals/{}'
 HOSPITAL_DETAIL_URL = 'https://chunyuyisheng.com/pc/hospital/{}'
 
+@crawl_decorator
 def crawl_all_hospital_base_info():
     '''
     抓取所有医院信息（基本信息、医生入驻信息、当前在线咨询信息、医院科室排名信息）
     :return:
     '''
     # 获取所有省份id：get_hospital_province_list
-    province_list_html = get_page_html(BASE_URL)
-    province_list = get_hospital_province_list(province_list_html)
+    province_list = ['110000-0', '120000-0', '130000-0', '140000-0',
+                     '150000-0', '210000-0', '220000-0', '230000-0',
+                     '310000-0', '320000-0', '330000-0', '340000-0',
+                     '350000-0', '360000-0', '370000-0', '410000-0',
+                     '420000-0', '430000-0', '440000-0', '450000-0',
+                     '460000-0', '500000-0', '510000-0', '520000-0',
+                     '530000-0', '540000-0', '610000-0', '620000-0',
+                     '630000-0', '640000-0', '650000-0', '710000-0']
 
     # 遍历获得每个省份下的医院id：get_hospital_list_from_province
     for i in range(len(province_list)):
-        # TODO crawl-info 日志 正在抓取xx地区的医院信息
-        print('正在抓取第', i, "页", province_list[i])
+        logger.info("正在抓取第 {} 个 {} 省份 的医院列表信息".format(i+1, province_list[i]))
         province_url = HOSPITAL_URL.format(province_list[i])
         hospital_list_html = get_page_html(province_url)
 
         hospital_list = get_hospital_list_from_province(hospital_list_html)
+        if not hospital_list:
+            logger.error("获取省份 {} 的医院列表失败".format(province_list[i]))
+            return
         for hospital in hospital_list:
-            # TODO crawl-info 正在抓取xx医院的信息
-            print("正在抓取医院", hospital[0])
             id = hospital[0]
             city = hospital[1]
+            logger.info("正在抓取 {} 医院的信息".format(id))
 
             # 进入每个医院详情页
-            # crawl_hospitall_clinic_rank(id)
-            # crawl_hospital_base_info(id, city)
+            crawl_hospitall_clinic_rank(id)
+            crawl_hospital_base_info(id, city)
             crawl_hospital_clinic_enter_doctor(id)
             crawl_hospital_real_time_inquiry(id)
 
-        # TODO crawl-info xxx地区医院信息已抓取完毕
-        print("第", i, "页数据抓取完毕")
+        logger.info("第 {} 个省份医院信息抓取完毕".format(i+1))
 
+@crawl_decorator
 def crawl_all_hospital_clinic_base_info():
     '''
     抓取所有医院的所有科室基本信息
@@ -57,14 +75,14 @@ def crawl_all_hospital_clinic_base_info():
     # 1 获取所有省份id：get_hospital_province_list
     province_list_html = get_page_html(BASE_URL)
     province_list = get_hospital_province_list(province_list_html)
-    # province_list = ['120000-0', '130000-0', '140000-0',
-    #                 '150000-0', '210000-0', '220000-0', '230000-0',
-    #                 '310000-0', '320000-0', '330000-0', '340000-0',
-    #                 '350000-0', '360000-0', '370000-0', '410000-0',
-    #                 '420000-0', '430000-0', '440000-0', '450000-0',
-    #                 '460000-0', '500000-0', '510000-0', '520000-0',
-    #                 '530000-0', '540000-0', '610000-0', '620000-0',
-    #                 '630000-0', '640000-0', '650000-0', '710000-0']
+    province_list = ['120000-0', '130000-0', '140000-0', '110000-0'
+                     '150000-0', '210000-0', '220000-0', '230000-0',
+                     '310000-0', '320000-0', '330000-0', '340000-0',
+                     '350000-0', '360000-0', '370000-0', '410000-0',
+                     '420000-0', '430000-0', '440000-0', '450000-0',
+                     '460000-0', '500000-0', '510000-0', '520000-0',
+                     '530000-0', '540000-0', '610000-0', '620000-0',
+                     '630000-0', '640000-0', '650000-0', '710000-0']
 
     # 2 遍历获得每个省份下的医院id：get_hospital_list_from_province
     for i in range(len(province_list)):

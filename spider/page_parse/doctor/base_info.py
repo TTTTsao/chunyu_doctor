@@ -1,8 +1,20 @@
 from spider.db.models import DoctorBaseInfo
 from spider.util.reg.reg_doctor import (get_reg_doctor_id, get_reg_doctor_name)
+from spider.decorators.parse_decorator import parse_decorator
 
+import sys
+from loguru import logger
 from lxml import etree
 
+from spider.config.conf import get_logger_logging_format
+logging_format = get_logger_logging_format()
+
+logger.add(sys.stderr, level="INFO", format=logging_format)
+logger.add('spider/logs/parse_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/parse_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
+logger.add('spider/logs/parse_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
+
+@parse_decorator(False)
 def get_active_doctor_base_info(html):
     '''
     get active doctor base info data
@@ -11,7 +23,7 @@ def get_active_doctor_base_info(html):
     :return:
     '''
     if not html:
-        return
+        return False
 
     xpath = etree.HTML(html)
     doctor_name_list = xpath.xpath("/html/body/div[4]/div[4]/div/div[2]/div[1]/a/span[1]/text()")
@@ -27,8 +39,12 @@ def get_active_doctor_base_info(html):
         doctor_base_info.doctor_name = doctor_name
         doctor_base_info_datas.append(doctor_base_info)
 
-    return doctor_base_info_datas
+    if not doctor_base_info_datas:
+        return False
+    else:
+        return doctor_base_info_datas
 
+@parse_decorator(False)
 def get_doctor_base_info(doctor_id, html):
     '''
     从医生个人主页页面获取基本信息
@@ -36,7 +52,7 @@ def get_doctor_base_info(doctor_id, html):
     :return: doctor base info 对象
     '''
     if not html:
-        return
+        return False
 
     doctor_base_info = DoctorBaseInfo()
     xpath = etree.HTML(html)
@@ -47,7 +63,7 @@ def get_doctor_base_info(doctor_id, html):
 
     return doctor_base_info
 
-
+@parse_decorator(False)
 def get_doctor_base_info_from_clinic(html):
     '''
     get doctor base info from clinic page
@@ -56,7 +72,7 @@ def get_doctor_base_info_from_clinic(html):
     :return:
     '''
     if not html:
-        return
+        return False
     xpath = etree.HTML(html)
 
     doctor_id_list = xpath.xpath("//div[@class='avatar-wrap']/a/@href")
@@ -64,9 +80,8 @@ def get_doctor_base_info_from_clinic(html):
 
     # 判断页面有无医生
     if len(doctor_id_list) == 0:
-        # TODO parse-warning 日志-该科室没有医生
-        print("该科室没有医生")
-        return
+        logger.warning("该科室页面没有医生列表")
+        return False
 
     doctor_base_info_datas = []
     for i in range(len(doctor_id_list)):
