@@ -107,6 +107,11 @@ def doctor_info_mapping(html):
     '''
     doctor_id, doctor_base, doctor_description, doctor_price, doctor_serve, doctor_comment, doctor_reward = dp.doctor_mobile_page_html_2_doctor_detail(html)
     doctor_status_data = dp.doctor_mobile_page_html_2_doctor_status(doctor_id, html)
+    json = dr.get_doctor_illness_init_json(doctor_id)
+    if is_illness_question_exist(json):
+        doctor_status_data.is_illness_question_exist = 1
+    else:
+        doctor_status_data.is_illness_question_exist = 0
     if not check_db_exist('estimate_doctor_crawl_status', [{'k': 'doctor_id', "v": doctor_id}]):
         DoctorStatusOper.add_one(doctor_status_data)
     else:
@@ -318,22 +323,3 @@ def question_html_mapping(question_id):
     else:
         illness_data = dp.question_html_2_doctor_quesstion_clinic_and_html(question_id, html)
         DoctorIllnessOper.update_illness_by_question_id(illness_data)
-
-
-if __name__ == '__main__':
-    clinic_list = ['0', '1', '6', '8', '13', '15', '16', '21', 'fa',
-                   'fb', 'aa', 'ab', 'ac', 'ad', 'af', 'ae', 'ag', 'ah',
-                   'ai', 'ha', 'hb', 'ca', 'cb', 'cc', 'ba', 'bb', 'bc',
-                   'bd', 'be', 'bf', 'bg', 'bh', 'bi', 'bj', 'ma', 'mb',
-                   'mc', 'md', 'oa', 'ob', 'oc', 'oe', 'ja', 'jb', 'jc',
-                   'na', 'nb', 'qa', 'qb', 'qc', 'qd', 'qe', 'qf', 'qg', 'qh', 'qi']
-
-    for item in clinic_list:
-        html = dr.get_recommend_doctor_page(item, 1)
-        xpath = etree.HTML(html)
-
-        clinic = Clinic(
-            clinic_id=item,
-            clinic_name=xpath.xpath("//*[@id='chosen-list']/li[1]/text()")
-        )
-        ClinicOper.add_one(clinic)

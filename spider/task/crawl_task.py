@@ -14,6 +14,7 @@ from spider.page_parse.field_parse.doctor_parse import *
 from spider.db.basic import db_session
 from spider.util.log_util import create_crawl_logger
 logger = create_crawl_logger()
+logger.remove()
 
 
 all_done = False
@@ -62,7 +63,7 @@ def task_action(key_name, e_id):
     if key_name == "question_html":
         question_html_mapping(e_id)
     if key_name == "inquiry_doctor_nums":
-        pass
+        hospital_high_frequency_mapping(e_id)
 
 
 def task_run(done_list, task_queue, thread_order):
@@ -127,7 +128,9 @@ def crawl_doctor_status_task():
     :return:
     '''
     thread_nums = 16
-    sql = text("""SELECT distinct doctor_id FROM raw_doctor_base_info""")
+    sql = text("""
+    SELECT distinct A.doctor_id FROM raw_doctor_base_info A WHERE (SELECT COUNT(1) AS num FROM estimate_doctor_crawl_status B WHERE A.doctor_id = B.doctor_id)=0 LIMIT 100000
+    """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_status", sql=sql)
 
 def crawl_doctor_anti_status_task():
@@ -156,7 +159,7 @@ def crawl_doctor_question_task():
     '''
     thread_nums = 16
     sql = text("""
-    SELECT distinct b.doctor_id FROM raw_doctor_base_info b LEFT JOIN raw_html_illness a ON b.doctor_id=a.doctor_id WHERE a.doctor_id IS NULL
+    SELECT distinct b.doctor_id FROM raw_doctor_base_info b LEFT JOIN raw_html_illness a ON b.doctor_id=a.doctor_id WHERE a.doctor_id IS NULL LIMIT 100000
     """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_question", sql=sql)
 
