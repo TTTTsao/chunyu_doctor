@@ -53,6 +53,8 @@ def task_action(key_name, e_id):
         recommend_doctor_mapping(e_id)
     if key_name == "doctor_status":
         doctor_detail_page_status_mapping(e_id, 24*30)
+    if key_name == "anti_crawl_doctor_status":
+        doctor_anti_crawl_detail_page_status_mapping(e_id)
     if key_name == "doctor_price_comment_serve":
         doctor_high_frequency_info_mapping(e_id)
     if key_name == "doctor_question":
@@ -125,9 +127,18 @@ def crawl_doctor_status_task():
     :return:
     '''
     thread_nums = 16
-    # sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_anti_crawl=0""")
-    sql = text("""SELECT distinct b.doctor_id FROM raw_doctor_base_info b LEFT JOIN estimate_doctor_crawl_status a ON b.doctor_id=a.doctor_id WHERE a.doctor_id IS NULL""")
+    sql = text("""SELECT distinct doctor_id FROM raw_doctor_base_info""")
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_status", sql=sql)
+
+def crawl_doctor_anti_status_task():
+    '''
+    抓取【医生被反爬页面状态】
+    :return:
+    '''
+    thread_nums = 16
+    sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_anti_crawl=0""")
+    __common_thread_task(thread_nums=thread_nums, queue_name="anti_crawl_doctor_status", sql=sql)
+
 
 def crawl_doctor_high_fruency_info_task():
     '''
@@ -171,7 +182,7 @@ def crawl_realtime_inquiry_task():
 
 if __name__ == '__main__':
     # crawl_recommend_doctor_task()
-    # crawl_doctor_status_task()
+    crawl_doctor_status_task()
     # crawl_doctor_question_task()
     # crawl_question_html_task()
-    crawl_doctor_high_fruency_info_task()
+    # crawl_doctor_high_fruency_info_task()

@@ -69,6 +69,36 @@ def doctor_detail_page_status_mapping(doctor_id, interval_hours):
             DoctorStatusOper.update_status_by_data(doctor_status_data)
 
 @crawl_decorator
+def doctor_anti_crawl_detail_page_status_mapping(doctor_id):
+    '''
+    被反爬后重新抓取医生页面状态信息
+    :param doctor_id:
+    :return:
+    '''
+    html = dr.get_doctor_moblie_detail_page(doctor_id)
+    if html is None:
+        logger.warning("医生 {} 页面为None".format(doctor_id))
+        doctor_status_data = dp.anti_crawl_doctor_status(doctor_id)
+    elif is_404(html):
+        logger.warning("医生 {} 页面为 404 页面".format(doctor_id))
+        doctor_status_data = dp.return_404_doctor_status(doctor_id)
+    elif not is_doctor_mobile_detail_page_right(doctor_id, html):
+        logger.warning("医生 {} 页面被反爬，稍后重新爬取".format(doctor_id))
+        doctor_status_data = dp.anti_crawl_doctor_status(doctor_id)
+        doctor_info_mapping(html)
+    else:
+        doctor_status_data = dp.doctor_mobile_page_html_2_doctor_status(doctor_id, html)
+        json = dr.get_doctor_illness_init_json(doctor_id)
+        if is_illness_question_exist(json):
+            doctor_status_data.is_illness_question_exist = 1
+        else:
+            doctor_status_data.is_illness_question_exist = 0
+    if not check_db_exist('estimate_doctor_crawl_status', [{'k': 'doctor_id', "v": doctor_id}]):
+        DoctorStatusOper.add_one(doctor_status_data)
+    else:
+        DoctorStatusOper.update_status_by_data(doctor_status_data)
+
+@crawl_decorator
 def doctor_info_mapping(html):
     '''
     被反爬后，解析返回的数据(mobile)
