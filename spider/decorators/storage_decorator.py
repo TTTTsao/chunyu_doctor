@@ -2,16 +2,9 @@ import sys
 from functools import wraps
 from spider.db.basic import db_session
 
-from spider.config.conf import get_logger_logging_format
-logging_format = get_logger_logging_format()
-
-from loguru import logger
-logger.add(sys.stderr, level="INFO", format=logging_format)
+from spider.util.log_util import create_storage_logger
+logger = create_storage_logger()
 logger.remove()
-logger.add('spider/logs/storage_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
-logger.add('spider/logs/storage_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
-logger.add('spider/logs/storage_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
-
 
 def db_commit_decorator(func):
     @wraps(func)

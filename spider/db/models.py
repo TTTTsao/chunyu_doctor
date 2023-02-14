@@ -71,13 +71,27 @@ class DoctorHospitalRelationship(Base):
     __table__ = doctor_hospital_relationship
     __table_args__ = ({'comment': '医院医生多对多关系信息'})
 
-class FirstClinic(Base):
-    __table__ = first_clinic
-    __table_args__ = ({'comment': '一级科室信息'})
+class DoctorRecommend(Base):
+    __table__ = recommend_doctor
+    __table_args__ = ({'comment': '每日推荐医生信息，去重'})
 
-class SecondClinic(Base):
-    __table__ = second_clinic
-    __table_args__ = ({'comment': '二级科室信息'})
+class DoctorStatus(Base):
+    __table__ = estimate_doctor_crawl_status
+    __table_args__ = ({'comment': '医生详情页面状态信息'})
 
+class DoctorHighFrequencyStatus(Base):
+    __table__ = estimate_doctor_high_frequency_info_status
+    __table_args__ = ({'comment': '判断医生高频抓取信息的抓取状态（用于重新抓取抓取失败或被反爬'})
 
+class DoctorMidFrequencyStatus(Base):
+    __table__ = estimate_doctor_mid_frequency_info_status
+    __table_args__ = ({'comment': '判断医生中频抓取信息的抓取状态（用于重新抓取抓取失败或被反爬'})
+
+class DoctorLowFrequencyStatus(Base):
+    __table__ = estimate_doctor_low_frequency_info_status
+    __table_args__ = ({'comment': '判断医生低频抓取信息的抓取状态（用于重新抓取抓取失败或被反爬'})
+
+class Clinic(Base):
+    __table__ = raw_clinic
+    __table_args__ = ({'comment': '科室基本信息表（非医院详细科室）'})
 

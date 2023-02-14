@@ -2,6 +2,7 @@ from spider.db.models import DoctorAuthInfo
 from spider.util.reg.reg_doctor import get_reg_auth_time
 from spider.util.reg.reg_hospital import (get_reg_hospital_id, get_reg_clinic_id)
 from spider.decorators.parse_decorator import parse_decorator
+from spider.page_parse.basic import is_doctor_detail_page_right
 
 from lxml import etree
 
@@ -10,12 +11,6 @@ from loguru import logger
 
 from spider.config.conf import get_logger_logging_format
 logging_format = get_logger_logging_format()
-
-logger.add(sys.stderr, level="INFO", format=logging_format)
-logger.add('spider/logs/parse_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
-logger.add('spider/logs/parse_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
-logger.add('spider/logs/parse_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
-
 
 @parse_decorator(False)
 def get_doctor_auth_info(doctor_id, html):
@@ -28,6 +23,10 @@ def get_doctor_auth_info(doctor_id, html):
     if not html:
         return False
 
+    if not is_doctor_detail_page_right(doctor_id, html):
+        logger.error("被反爬，{} 医生详情页面与医生不一致".format(doctor_id))
+        # TODO 增加将未成功爬取的doctor_id 写入一个json文件 用于后续爬取
+        return False
     xpath = etree.HTML(html)
     doctor_auth_info = DoctorAuthInfo()
     doctor_auth_info.doctor_id = doctor_id

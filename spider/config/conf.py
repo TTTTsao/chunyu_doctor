@@ -30,11 +30,20 @@ def get_db_args():
 def get_max_home_page():
     return cf.get('max_home_page')
 
-def get_proxy_url():
-    return cf.get('proxy_url')
+def get_open_proxy_url():
+    return cf.get('JHao-proxy_url')
 
 def get_logger_logging_format():
     return cf.get('logging_format')
 
 def get_thread_nums():
     return cf.get('thread_nums')
+
+def get_frequency_limit():
+    return cf.get("frequency_limit")
+
+def get_usage_limit():
+    return cf.get("usage_limit")
+
+def get_choose_proxy():
+    return cf.get("proxy_url")

@@ -12,7 +12,7 @@ def get_hospital_enter_doctor_info(hospital_id, html):
     :return: hospital_enter_doctor_info data
     '''
     if not html:
-        return False
+        return
     xpath = etree.HTML(html)
     hospital_enter_datas = []
 
@@ -47,3 +47,15 @@ def get_hospital_enter_doctor_info(hospital_id, html):
         hospital_enter_datas.append(hospital_enter_data)
 
     return hospital_enter_datas
+
+def get_hospital_total_enter_doctor(hospital_id, html):
+    '''
+    抓取医院总入驻医生数
+    :param hospital_id:
+    :param html:
+    :return:
+    '''
+    if not html:
+        return
+    xpath = etree.HTML(html)
+    pass

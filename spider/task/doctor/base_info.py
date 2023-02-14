@@ -72,6 +72,7 @@ def crawl_all_doctor_base_info():
                     crawl_doctor_base_info_from_clinic(clinic_id)
         logger.info("第{}个 即 {} 省份的医院列表及其医生基本信息抓取完毕".format(i+1, province_list[i]))
 
+
 @crawl_decorator
 def crawl_doctor_base_info_from_clinic(clinic_id):
     '''

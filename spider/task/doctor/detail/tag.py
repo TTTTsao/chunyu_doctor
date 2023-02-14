@@ -25,4 +25,4 @@ def crawl_doctor_tag(doctor_id):
     if not DoctorTagOper.get_doctor_tag_by_doctor_id(doctor_id):
         DoctorTagOper.add_one(doctor_tag_data)
     else:
-        DoctorTagOper.add_one(doctor_tag_data)
+        DoctorTagOper.update_tag_by_doctor_id(doctor_tag_data)

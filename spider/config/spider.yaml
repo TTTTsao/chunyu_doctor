@@ -3,25 +3,29 @@ time_out: 4                     # timeout for crawling and storing user info
 min_crawl_interal: 10           # min interal of http request
 max_crawl_interal: 20           # max interal of http request
 excp_interal: 5*60              # time for sleeping when crawling raises exceptions
-max_home_page: 26              # max active home page for crawling
-max_retries: 5                 # retry times for crawling
-thread_nums: 40                  # thread nums
-logging_format: "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <blue>{thread: <8}</blue> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>"
+max_home_page: 26               # max active home page for crawling
+max_retries: 6                  # retry times for crawling
+thread_nums: 10                 # thread nums
 
+frequency_limit: 4
+usage_limit: 50
+
+logging_format: "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <blue>{thread: <8}</blue> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> | <level>{message}</level>"
 
 # MySQL
 db:
-#    host: 10.22.32.29
-    host: 127.0.0.1
+    host: 10.22.32.29
     port: 3306
-    user: root
-    password: Zayn9296.
-#    user: guest
-#    password: guest87654321
+    user: guest
+    password: guest87654321
     db_name: chunyu_doctor
     db_type: mysql
+#    host: 127.0.0.1
+#    user: root
+#    password: Zayn9296.
+
 
 # proxy_pool
-proxy_url: http://120.79.159.242:49222/random
-
+proxy_url : 'jhao'
+JHao-proxy_url: http://120.79.159.242:49222/random
 

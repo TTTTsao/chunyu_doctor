@@ -2,18 +2,9 @@ import sys
 import os
 from functools import wraps
 from traceback import format_tb
-from loguru import logger
-
-from spider.config.conf import get_logger_logging_format
-logging_format = get_logger_logging_format()
-
-log_dir = os.path.dirname(os.path.dirname(__file__))+'/logs'
-
-logger.add(sys.stderr, level="INFO", format=logging_format)
+from spider.util.log_util import create_parse_logger
+logger = create_parse_logger()
 logger.remove()
-logger.add('spider/logs/parse_logs/runlog_{time}.log', level="INFO", format=logging_format, rotation="20 MB", encoding='utf-8')
-logger.add('spider/logs/parse_logs/warninglog_{time}.log', level="WARNING", format=logging_format, rotation="20 MB", encoding='utf-8')
-logger.add('spider/logs/parse_logs/errorlog_{time}.log', level="ERROR", format=logging_format, rotation="20 MB", encoding='utf-8')
 
 def parse_decorator(return_value):
     def page_parse(func):

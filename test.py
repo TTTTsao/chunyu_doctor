@@ -1,13 +1,13 @@
 from spider.db.basic import session_scope
-
+from spider.page_get.basic import get_page_html
+from spider.page_parse.basic import is_doctor_detail_page_right
+from spider.page_parse.basic import is_illness_detail_page_right
+from spider.task.doctor.base_info import crawl_doctor_base_info
 import json
+import os
 
 if __name__ == '__main__':
-    # with session_scope() as session:
-    #     result = session.execute("select distinct hospital_id from raw_hospital")
-    #     id_list = [item[0] for item in result]
-    #     with open("hospital_id_little.json", "w") as f:
-    #         f.write(json.dumps(id_list))
-    with open("hospital_id_little.json", "r") as f:
-        result = json.load(f)
-        print(type(result))
+
+    pass
+
+

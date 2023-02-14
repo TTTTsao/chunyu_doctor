@@ -1,6 +1,7 @@
 from spider.db.models import DoctorCommentLabel
 from spider.util.reg.reg_doctor import get_reg_label_num
 from spider.decorators.parse_decorator import parse_decorator
+from spider.page_parse.basic import is_doctor_detail_page_right
 
 from lxml import etree
 
@@ -25,6 +26,9 @@ def get_doctor_comment_label(doctor_id, html):
     '''
     if not html:
         return
+    if not is_doctor_detail_page_right(doctor_id, html):
+        logger.error("被反爬，{} 医生详情页面与医生不一致".format(doctor_id))
+        return False
     doctor_comment_label_data = DoctorCommentLabel()
     doctor_comment_label_data.doctor_id = doctor_id
     xpath = etree.HTML(html)

@@ -23,4 +23,9 @@ def crawl_doctor_auth_info(doctor_id):
         logger.warning("无法获取 {} 医生的认证信息".format(doctor_id))
         return
 
-    DoctorAuthInfoOper.add_one(doctor_auth_data)
+    if not DoctorAuthInfoOper.get_doctor_auth_info_by_doctor_id(doctor_id):
+        # 表中未有认证信息
+        DoctorAuthInfoOper.add_one(doctor_auth_data)
+    else:
+        # 表中存在认证信息-更新
+        DoctorAuthInfoOper.update_auth_info_by_doctor_id(doctor_auth_data)

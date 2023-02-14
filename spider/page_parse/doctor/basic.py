@@ -35,7 +35,7 @@ def get_active_doctor_id_list(html):
 
     return doctor_id_list
 
-@parse_decorator
+@parse_decorator(False)
 def get_doctor_id_list_from_clinic_page(html):
     '''
     从科室页获取当页的doctor id list

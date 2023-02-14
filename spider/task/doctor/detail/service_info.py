@@ -24,5 +24,12 @@ def crawl_doctor_service_info(doctor_id):
         logger.warning("{} 医生不存在服务信息".format(doctor_id))
         return
 
-    DoctorServiceInfoOper.add_one(doctor_service_data)
+    if not DoctorServiceInfoOper.get_doctor_service_info_by_doctor_id(doctor_id):
+        # 表中未有医生个人服务信息
+        DoctorServiceInfoOper.add_one(doctor_service_data)
+    else:
+        # 表中存在医生个人服务信息-更新
+        DoctorServiceInfoOper.update_service_info_by_doctor_id(doctor_service_data)
+
+
 

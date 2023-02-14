@@ -23,4 +23,10 @@ def crawl_doctor_comment_label(doctor_id):
         logger.warning("无法获取 {} 医生的患者评价标签".format(doctor_id))
         return
 
-    DoctorCommentLabelOper.add_one(doctor_comment_label_data)
+    if not DoctorCommentLabelOper.get_doctor_comment_label_by_doctor_id(doctor_id):
+        # 表中未有评价标签信息
+        DoctorCommentLabelOper.add_one(doctor_comment_label_data)
+    else:
+        # 表中存在评价标签信息-更新
+        DoctorCommentLabelOper.update_comment_label_by_doctor_id(doctor_comment_label_data)
+

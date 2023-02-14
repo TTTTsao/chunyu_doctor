@@ -1,13 +1,16 @@
 import os
+import threading
 
 from sqlalchemy import (
     create_engine, MetaData)
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 
 from spider.config.conf import get_db_args
 from contextlib import contextmanager
 
+local = threading.local()
 
 def get_engine():
     args = get_db_args()
@@ -28,10 +31,15 @@ def session_scope():
     finally:
         session.close()
 
+def get_thread_exclusive_dbsession():
+    if not hasattr(local, "db_session"):
+        local.db_session = scoped_session(Session)
+    return local.db_session
+
 eng = get_engine()
 Base = declarative_base()
 Session = sessionmaker(bind=eng)
-db_session = Session()
+db_session = get_thread_exclusive_dbsession()
 metadata = MetaData(get_engine())
 
 __all__ = ['eng', 'Base', 'db_session', 'metadata']

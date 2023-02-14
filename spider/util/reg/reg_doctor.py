@@ -87,10 +87,12 @@ def get_reg_doctor_name(str):
     :return:
     '''
     pattern = re.compile('\\\\+\w{3}')
-    # doctor_name = re.search("([\u4e00-\u9fa5]+)", str).group()
     doctor_name = re.sub(pattern, '', str)
     return doctor_name
 
+def get_reg_mobile_price(str):
+    price = int(re.search("(\d+)", str).group())
+    return price
 
 if __name__ == '__main__':
     row_doctor_id = '/pc/doctor/clinic_web_fa2e2aadbeb99583/'
@@ -101,6 +103,7 @@ if __name__ == '__main__':
     row_label_num = '[285]'
     row_reward_amount = '36元'
     doctor_name = "YAN ZI\xa0"
-    print(get_reg_price_type(row_price_type))
+    price = '图文咨询¥50'
+    print(get_reg_mobile_price(price))
 
 

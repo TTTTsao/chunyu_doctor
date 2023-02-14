@@ -20,7 +20,7 @@ def crawl_doctor_reward(doctor_id):
     doctor_reward_data = get_doctor_reward(doctor_id, html)
     # 不存在
     if not doctor_reward_data:
-        logger.warning("{} 医生不存在价格信息".format(doctor_id))
+        logger.warning("{} 医生不存在心意墙信息".format(doctor_id))
         return
 
     DoctorRewardOper.add_all(doctor_reward_data)

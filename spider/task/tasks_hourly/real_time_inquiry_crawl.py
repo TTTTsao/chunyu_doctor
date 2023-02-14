@@ -4,14 +4,13 @@ from concurrent.futures import ThreadPoolExecutor
 import time
 import queue
 import threading
+from multiprocessing import Process
 import json
 import signal
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 
-from spider.task.doctor.detail.price import crawl_doctor_price
-from spider.task.doctor.detail.service_info import crawl_doctor_service_info
-from spider.task.doctor.detail.reward import crawl_doctor_reward
-from spider.task.doctor.detail.comment_label import crawl_doctor_comment_label
-from spider.task.doctor.detail.illness import crawl_illness_question
+
 from spider.task.hospital.detail.real_time_inquiry import crawl_hospital_real_time_inquiry
 from spider.config.conf import (get_logger_logging_format, get_thread_nums)
 logging_format = get_logger_logging_format()
@@ -29,12 +28,6 @@ task_queue_dict = {
 
 def task(task_name, e_id):
     logger.info("task任务, 队列为:%s, id为:%s" % (task_name, str(e_id)))
-    if task_name == "doctor":
-        crawl_doctor_price(e_id)
-        crawl_doctor_service_info(e_id)
-        crawl_doctor_reward(e_id)
-        crawl_doctor_comment_label(e_id)
-        # crawl_illness_question(e_id)
     if task_name == "hospital":
         crawl_hospital_real_time_inquiry(e_id)
 
@@ -56,12 +49,7 @@ def action(done_list, task_queue, thread_order):
 
 
 def init_queue():
-    with open("doctor_id.json", "r") as f:
-        result = json.load(f)
-        for item in result:
-            task_queue_dict["doctor"].put(item)
-        logger.info("医生信息抓取任务初始化成功")
-    with open("hospital_id.json", "r") as f:
+    with open("../../../hospital_id.json", "r") as f:
         result = json.load(f)
         for item in result:
             task_queue_dict["hospital"].put(item)
@@ -92,16 +80,6 @@ def saver():
             time.sleep(30)
             if all_done or exited:
                 break
-        do_save()
-
-
-def do_save():
-    save_dict = {}
-    for k, v in task_queue_dict.items():
-        save_dict[k] = list(v.queue)
-    with open("queue_save.json", "w") as f:
-        json.dump(save_dict, f)
-    logger.info("queue保存成功")
 
 
 def sig_handler(sig, frame):
@@ -109,12 +87,16 @@ def sig_handler(sig, frame):
     exited = True
     logger.info('收到信号 signal %d, exited=%d' % (sig, exited))
 
+def real_time_inquiry_process():
+    crawl_threads = Process(target=real_time_inquiry_main)
+    crawl_threads.start()
 
-def main():
+def real_time_inquiry_main():
     signal.signal(signal.SIGTERM, sig_handler)
     signal.signal(signal.SIGINT, sig_handler)
     pool = ThreadPoolExecutor(max_workers=thread_nums)
     done_list = [False for _ in range(thread_nums)]
+    start_time = time.time()
     init_queue()
     for i in range(thread_nums):
         pool.submit(action, done_list, task_queue_dict, i)
@@ -124,9 +106,12 @@ def main():
         time.sleep(30)
     pool.shutdown(wait=True)
     saver_thread.join()
-    do_save()
+    end_time = time.time()
+    logger.info("用时：{}".format(end_time-start_time))
     logger.info("exit")
 
 
 if __name__ == '__main__':
-    main()
+    sche = BlockingScheduler(timezone='Asia/Shanghai')
+    sche.add_job(real_time_inquiry_main, CronTrigger.from_crontab('31 */1 * * *',timezone='Asia/Shanghai'))
+    sche.start()

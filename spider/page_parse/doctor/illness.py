@@ -5,11 +5,13 @@ from spider.page_get.basic import get_page_html
 from spider.db.models import IllnessInfo
 from spider.util.basic import trans_to_datetime
 from spider.decorators.parse_decorator import parse_decorator
+from spider.page_parse.basic import is_illness_detail_page_right
+from loguru import logger
 
 ILLNESS_DETAIL_URL = 'https://www.chunyuyisheng.com/pc/qa/{}'
 
 @parse_decorator(False)
-def get_illness_datas(doctor_id, type, html):
+def get_illness_datas(doctor_id, type_item, html):
     '''
     从ajax页抓取illness信息
     :param html:
@@ -25,8 +27,11 @@ def get_illness_datas(doctor_id, type, html):
     for problem in problem_list:
         illness_data = IllnessInfo()
         illness_data.doctor_id = doctor_id
-        illness_data.illness_type = type
+        illness_data.illness_type = type_item
         illness_data.illness_question_id = problem["id"]
+
+        # TODO 判断question是否已经被抓取和完整录入
+
         illness_data.illness_title = problem["title"]
         illness_data.illness_time = trans_to_datetime(problem["date_str"])
         illness_data.clinic_id = get_illness_clinic_id(illness_data.illness_question_id)
@@ -35,7 +40,7 @@ def get_illness_datas(doctor_id, type, html):
         illness_datas.append(illness_data)
     return illness_datas
 
-@parse_decorator
+@parse_decorator(False)
 def get_illness_hot_consults(html):
     '''
     从ajax页获取illness hot consults
@@ -43,7 +48,7 @@ def get_illness_hot_consults(html):
     :return:
     '''
     if not html:
-        return False
+        return
     cont = json.loads(html).get('hot_consults')
     if is_cont_not_none(cont):
         hot_consults = []
@@ -53,7 +58,7 @@ def get_illness_hot_consults(html):
     else:
         return False
 
-@parse_decorator
+@parse_decorator(False)
 def get_illness_problem_list(html):
     '''
     从ajax页获取illness problem list
@@ -68,7 +73,7 @@ def get_illness_problem_list(html):
     else:
         return False
 
-@parse_decorator
+@parse_decorator(False)
 def is_illness_none(html):
     if not html:
         return
@@ -88,7 +93,7 @@ def has_more_page(html):
     else:
         return False
 
-@parse_decorator
+@parse_decorator(False)
 def get_illness_clinic_id(question_id):
     '''
     从ajax页获取illness clinic id
@@ -101,12 +106,12 @@ def get_illness_clinic_id(question_id):
     try:
         clinic_id = xpath.xpath("//div[@class='bread-crumb-spacial']/a/text()")[0]
     except IndexError:
-        return False
+        return ''
     except AttributeError:
-        return False
+        return ''
     return clinic_id
 
-@parse_decorator
+@parse_decorator(False)
 def get_illness_html(question_id):
     '''
     从ajaz页获取illness html
@@ -115,15 +120,18 @@ def get_illness_html(question_id):
     '''
     url = ILLNESS_DETAIL_URL.format(question_id)
     html = get_page_html(url)
+    if not is_illness_detail_page_right(question_id, html):
+        logger.error("被反爬，{} 问诊对话详情页面与对应医生不一致".format(question_id))
+        return False
     soup = BeautifulSoup(html, 'html.parser')
     try:
+        logger.info("抓取 {} 病情详情页".format(question_id))
         illness_row_html = str(soup.find_all(attrs={'class': 'context-left'}))
         illness_html = illness_row_html.replace("\t", '').replace("\n", '').replace(" ", '')
-    except:
+    except Exception:
         return False
     return illness_html
 
-@parse_decorator
 def is_cont_not_none(cont):
     if (cont is None):
         return False

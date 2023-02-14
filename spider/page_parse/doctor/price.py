@@ -3,6 +3,9 @@ from decimal import Decimal
 from spider.db.models import DoctorPrice
 from spider.util.reg.reg_doctor import (get_reg_price_type, get_reg_price_discount)
 from spider.decorators.parse_decorator import parse_decorator
+from spider.page_parse.basic import is_doctor_detail_page_right
+
+from loguru import logger
 
 from lxml import etree
 
@@ -15,6 +18,10 @@ def get_doctor_price(doctor_id, html):
     :return:
     '''
     if not html:
+        return
+    if not is_doctor_detail_page_right(doctor_id, html):
+        logger.error("被反爬，{} 医生详情页面与医生不一致".format(doctor_id))
+        # TODO 增加将未成功爬取的doctor_id 写入一个json文件 用于后续爬取
         return False
     doctor_price_data = DoctorPrice()
     doctor_price_data.doctor_id = doctor_id

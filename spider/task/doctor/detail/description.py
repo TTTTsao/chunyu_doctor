@@ -24,4 +24,9 @@ def crawl_doctor_description(doctor_id):
         logger.warning("无法获取 {} 医生的个人简介信息".format(doctor_id))
         return
 
-    DoctorDescriptionOper.add_one(doctor_description_data)
+    if not DoctorDescriptionOper.get_doctor_description_by_doctor_id(doctor_id):
+        # 表中未有医生个人简介信息
+        DoctorDescriptionOper.add_one(doctor_description_data)
+    else:
+        # 表中存在医生个人简介信息-更新
+        DoctorDescriptionOper.update_description_info_by_doctor_id(doctor_description_data)

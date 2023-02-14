@@ -1,4 +1,6 @@
-from spider.page_parse.doctor.illness import *
+from spider.page_get.basic import get_page_html
+from spider.page_parse.doctor.illness import (get_illness_datas, is_illness_none,
+                                            get_illness_hot_consults, has_more_page)
 from spider.db.dao.doctor_dao import DoctorIllnessOper
 from spider.decorators.crawl_decorator import crawl_decorator
 from loguru import logger
@@ -28,22 +30,34 @@ def crawl_illness_question(doctor_id):
     hot_consults = get_illness_hot_consults(html)
     if not hot_consults:
         return
-    for type in hot_consults:
+    for type_item in hot_consults:
         cur_page = 1
         flag = True
         while flag:
             # 2.has_more_page是否为True，为True进行翻页操作（flag = has_more_page(html)）
-            cur_url = ILLNESS_AJAX_URL.format(doctor_id, cur_page, type)
+            cur_url = ILLNESS_AJAX_URL.format(doctor_id, cur_page, type_item)
             cur_html = get_page_html(cur_url)
-            illness_datas = get_illness_datas(doctor_id, type, cur_html)
+            illness_datas = get_illness_datas(doctor_id, type_item, cur_html)
 
             # 不存在
             if not illness_datas:
                 logger.warning("无法获取 {} 医生的好评问题信息".format(doctor_id))
                 return
 
-            DoctorIllnessOper.add_all(illness_datas)
+            DoctorIllnessOper.add_illness_with_datas_query(illness_datas)
 
             cur_page += 1
             flag = has_more_page(cur_html)
         logger.info("{} 医生好评问题完成抓取，共计 {} 页".format(doctor_id, cur_page))
+
+
+
+
+@crawl_decorator
+def is_question_need_update(question_id):
+    '''
+    判断该问题是否需要更新
+    :param question_id:
+    :return:
+    '''
+    pass
