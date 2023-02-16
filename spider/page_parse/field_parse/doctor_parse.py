@@ -63,17 +63,15 @@ def doctor_mobile_page_html_2_doctor_detail(html):
         doctor_id=doctor_id,
         doctor_name=doctor_name
     )
-    doctor_description = doctor_mobile_page_html_2_doctor_description(doctor_id, html)
     doctor_price = doctor_mobile_page_html_2_doctor_price(doctor_id, html)
-    doctor_serve = doctor_mobile_page_html_2_doctor_service_info(doctor_id, html)
     doctor_comment = doctor_mobile_page_html_2_doctor_comment_label(doctor_id, html)
     doctor_reward = doctor_mobile_page_html_2_doctor_reward(doctor_id, html)
-    return doctor_id, doctor_base, doctor_description, doctor_price, doctor_serve, doctor_comment, doctor_reward
+    return doctor_id, doctor_base, doctor_price, doctor_comment, doctor_reward
 
 @parse_decorator(False)
 def doctor_mobile_page_html_2_doctor_description(doctor_id, html):
     '''
-    解析医生mobile详情页面-简介信息
+    【废弃】解析医生mobile详情页面-简介信息
     :param doctor_id: 医生id
     :param html: 医生详情页面
     :return: 医生简介信息对象/None(错误)
@@ -97,7 +95,7 @@ def doctor_mobile_page_html_2_doctor_description(doctor_id, html):
 @parse_decorator(False)
 def doctor_mobile_page_html_2_doctor_service_info(doctor_id, html):
     '''
-    解析医生mobile详情页面-服务信息
+    【废弃】解析医生mobile详情页面-服务信息
     :param doctor_id: 医生id
     :param html: 医生详情页面
     :return: 医生服务信息对象/None(错误)
@@ -362,6 +360,12 @@ def doctor_page_html_2_doctor_price(doctor_id, html):
 
 @parse_decorator(False)
 def doctor_page_html_2_doctor_description(doctor_id, html):
+    '''
+    解析pc医生详情页面-简介信息
+    :param doctor_id: 医生id
+    :param html: 医生详情页面
+    :return: 医生简介对象/None(错误)
+    '''
     doctor_description_data = DoctorDescription()
     doctor_description_data.doctor_id = doctor_id
 
@@ -458,6 +462,31 @@ def doctor_page_html_2_doctor_reward(doctor_id, html):
         logger.error("解析医生 {} 页面心意墙信息失败，错误详情 {}".format(doctor_id, e))
         return None
 
+def doctor_page_html_2_hospital_and_clinic_base(doctor_id, html):
+    '''
+    解析医生详情页面-医院信息、科室信息（仅未爬过）
+    [医院信息]:hospital_id、hospital_name
+    [科室信息]:hospital_id、clinic_id、clinic_name
+    :param html:
+    :return:
+    '''
+    xpath = etree.HTML(html)
+    try:
+        hospital_id = xpath.xpath("//div[@class='doctor-info-item']//div[@class='detail']/div[2]/a/@href")[0]
+        hospital_name = xpath.xpath("//div[@class='doctor-info-item']//div[@class='detail']/div[2]/a/text()")[0]
+        clinic_id = xpath.xpath("//div[@class='doctor-info-item']//div[@class='detail']/div[1]/a[1]/@href")[0]
+        clinic_name = xpath.xpath("//div[@class='doctor-info-item']//div[@class='detail']/div[1]/a[1]/text()")[0]
+
+        hospital = Hospital(hospital_id=get_reg_hospital_id(str(hospital_id)), hospital_name=get_reg_clinic_name(str(hospital_name)))
+        clinic = HospitalClinicBaseInfo(hospital_clinic_id=get_reg_clinic_id(str(clinic_id)), hospital_clinic_name=get_reg_clinic_name(str(clinic_name)))
+        hospital_clinic = HospitalClinicEnterDoctor(hospital_id=get_reg_hospital_id(str(hospital_id)), hospital_clinic_id=get_reg_clinic_id(str(clinic_id)))
+        return hospital, clinic, hospital_clinic
+    except Exception as e:
+        logger.error("解析医生 {} 页面医院和科室信息失败，错误详情 {}".format(doctor_id, e))
+        return None
+
+
+
 @parse_decorator(False)
 def doctor_inquiry_json_2_doctor_question(doctor_id, json, type_item):
     '''
@@ -503,12 +532,17 @@ def question_html_2_doctor_quesstion_clinic_and_html(question_id, html):
     soup = BeautifulSoup(html, 'lxml')
     try:
         clinic_id = xpath.xpath("//div[@class='bread-crumb-spacial']/a/text()")[0]
-        illness_row_html = str(soup.find_all(attrs={'class': 'context-left'}))
-        illness_html = illness_row_html.replace("\t", '').replace("\n", '').replace(" ", '')
+        dialog_list = soup.find_all(name='div', class_='context-left')
+        dialog_str = ''
+        for item in dialog_list:
+            people = item.find(name='h6', class_='doctor-name').get_text()
+            dialog = item.find(name='p').get_text().strip()
+            dialog_str = dialog_str + people + ":" + dialog + "\n"
+
         return IllnessInfo(
             illness_question_id=question_id,
             clinic_id=clinic_id,
-            illness_detail_html=illness_html
+            illness_detail_html=dialog_str
         )
     except Exception as e:
         logger.info("解析医生 {} 问诊对话页面信息失败，错误详情 {}".format(question_id, e))
@@ -642,6 +676,30 @@ def clinic_html_2_doctor_base(clinic_id, html):
         return doctor_base_datas
     except Exception as e:
         logger.warning("科室 {} 页面解析doctor_base错误, 详情: {}".format(clinic_id, e))
+        return None
+
+def clinic_html_2_doctor_img(clinic_id, html):
+    '''
+    【根据科室找医生】页面->医生头像信息（仅未爬过）
+    :param clinic_id: 科室id
+    :param html: response.text
+    :return: 医生头像信息对象/None（错误）
+    '''
+    xpath = etree.HTML(html)
+    doctor_img_datas = []
+    try:
+        doctor_id_list = xpath.xpath("/html/body/div[4]/div[4]/div/div[2]/div[1]/a/@href")
+        doctor_img_url_list = xpath.xpath("/html/body/div[4]/div[4]/div/div[1]/a/img/@src")
+        for i in range(len(doctor_id_list)):
+            doctor_id = get_reg_doctor_id(str(doctor_id_list[i]))
+            doctor_img = str(doctor_img_url_list[i])
+            doctor_img_datas.append(DoctorBaseInfo(
+                doctor_id=doctor_id,
+                doctor_img_remote_path=doctor_img
+            ))
+        return doctor_img_datas
+    except Exception as e:
+        logger.warning("科室 {} 页面解析doctor_img错误, 详情: {}".format(clinic_id, e))
         return None
 
 @parse_decorator(False)

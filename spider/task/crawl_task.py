@@ -24,7 +24,7 @@ task_queue_dict = {
     "doctor_base": queue.Queue(),
     "doctor_status": queue.Queue(),
     "doctor_auth_des_tag": queue.Queue(),
-    "doctor_price_comment_serve": queue.Queue(),
+    "doctor_price_comment": queue.Queue(),
     "doctor_reward": queue.Queue(),
     "doctor_question": queue.Queue(),
     "question_html": queue.Queue(),
@@ -56,8 +56,10 @@ def task_action(key_name, e_id):
         doctor_detail_page_status_mapping(e_id, 24*30)
     if key_name == "anti_crawl_doctor_status":
         doctor_anti_crawl_detail_page_status_mapping(e_id)
-    if key_name == "doctor_price_comment_serve":
+    if key_name == "doctor_price_comment":
         doctor_high_frequency_info_mapping(e_id)
+    if key_name == "doctor_auth_des_tag":
+        doctor_low_frequency_info_mapping(e_id)
     if key_name == "doctor_question":
         doctor_question_mapping(e_id)
     if key_name == "question_html":
@@ -135,22 +137,33 @@ def crawl_doctor_status_task():
 
 def crawl_doctor_anti_status_task():
     '''
-    抓取【医生被反爬页面状态】
+    抓取【被反爬医生页面状态】
     :return:
     '''
     thread_nums = 16
     sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_anti_crawl=0""")
     __common_thread_task(thread_nums=thread_nums, queue_name="anti_crawl_doctor_status", sql=sql)
 
-
 def crawl_doctor_high_fruency_info_task():
     '''
-    抓取【医生高频更新信息】
+    抓取【医生高频更新信息：price、comment_label】
     :return:
     '''
     thread_nums = 20
     sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_price_exist=1""")
-    __common_thread_task(thread_nums=thread_nums, queue_name="doctor_price_comment_serve", sql=sql)
+    __common_thread_task(thread_nums=thread_nums, queue_name="doctor_price_comment", sql=sql)
+
+def crawl_doctor_low_fruency_info_task():
+    '''
+    抓取【医生低频更新信息：auth、tag、description】
+    :return:
+    '''
+    thread_nums = 10
+    sql = text("""
+    SELECT distinct A.doctor_id FROM estimate_doctor_crawl_status A WHERE (SELECT COUNT(1) AS num FROM raw_doctor_auth_info B WHERE A.doctor_id = B.doctor_id and A.is_page_404=1 )=0 LIMIT 100000
+    """)
+    __common_thread_task(thread_nums=thread_nums, queue_name="doctor_auth_des_tag", sql=sql)
+
 
 def crawl_doctor_question_task():
     '''
@@ -171,6 +184,7 @@ def crawl_question_html_task():
     thread_nums = 1
     sql = text("""select distinct illness_question_id from raw_html_illness where illness_detail_html is null or illness_detail_html=0""")
     __common_thread_task(thread_nums=thread_nums, queue_name="question_html", sql=sql)
+
 
 def crawl_realtime_inquiry_task():
     '''

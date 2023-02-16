@@ -62,6 +62,22 @@ class DoctorImgOper(CommonOper):
     def get_doctor_img_by_doctor_id(cls, doctor_id):
         return db_session.query(DoctorImg).filter(DoctorImg.doctor_id == doctor_id).first()
 
+    @classmethod
+    @db_commit_decorator
+    def update_doctor_img_by_doctor_id(cls, data):
+        doctor = db_session.query(DoctorImg).filter(DoctorImg.doctor_id == data.doctor_id).first()
+        doctor.doctor_img_remote_path = data.doctor_img_remote_path
+        db_session.flush()
+        db_session.commit()
+
+    @classmethod
+    def add_doctor_img_with_query(cls, datas):
+        for data in datas:
+            if not cls.get_doctor_img_by_doctor_id(data.doctor_id):
+                cls.add_one(data)
+            else:
+                pass
+
 
 class DoctorAuthInfoOper(CommonOper):
     @classmethod
@@ -216,7 +232,7 @@ class DoctorRecommendOper(CommonOper):
             if not cls.get_doctor_recommend_by_doctor_id(data.doctor_id):
                 cls.add_one(data)
             else:
-                cls.update_doctor_recommend_by_doctor_id(data)
+                pass
 
 class DoctorStatusOper(CommonOper):
     @classmethod

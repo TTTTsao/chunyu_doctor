@@ -66,7 +66,7 @@ def get_doctor_detail_page(doctor_id):
         'accept-language': 'en,zh-CN;q=0.9,zh;q=0.8',
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
         'referer': 'https://chunyuyisheng.com/',
-        'connection': 'keep-alive',
+        'connection': 'close',
     }
     response = get(url, False, True, headers=headers)
     if response is None:
@@ -150,7 +150,7 @@ def get_doctor_inquiry_detail_page(question_id):
     response = get(url, False, True, headers=headers)
     if response is None:
         return None
-    return response.text.encode('utf-8', 'ignore').decode('utf-8')
+    return response.text
 
 
 @request_decorator
