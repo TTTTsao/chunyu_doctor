@@ -120,7 +120,7 @@ def crawl_recommend_doctor_task():
     '''
     抓取【科室页面-每日推荐医生】
     '''
-    thread_nums = 5
+    thread_nums = 3
     sql = text("""select distinct clinic_id from raw_clinic""")
     __common_thread_task(thread_nums=thread_nums, queue_name="recommend_doctor", sql=sql)
 
@@ -129,7 +129,7 @@ def crawl_doctor_status_task():
     抓取【医生页面状态】
     :return:
     '''
-    thread_nums = 16
+    thread_nums = 8
     sql = text("""
     SELECT DISTINCT b.doctor_id FROM raw_doctor_base_info AS b WHERE NOT EXISTS ( SELECT 1 FROM estimate_doctor_crawl_status AS a WHERE b.doctor_id=a.doctor_id LIMIT 0, 1 )
     """)
@@ -140,7 +140,7 @@ def crawl_doctor_anti_status_task():
     抓取【被反爬医生页面状态】
     :return:
     '''
-    thread_nums = 16
+    thread_nums = 8
     sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_anti_crawl=0""")
     __common_thread_task(thread_nums=thread_nums, queue_name="anti_crawl_doctor_status", sql=sql)
 
@@ -149,7 +149,7 @@ def crawl_doctor_high_fruency_info_task():
     抓取【医生高频更新信息：price、comment_label】
     :return:
     '''
-    thread_nums = 32
+    thread_nums = 16
     sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_price_exist=1""")
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_price_comment", sql=sql)
 
@@ -170,7 +170,7 @@ def crawl_doctor_question_task():
     抓取【医生问诊对话详情信息（ajax）】
     :return:
     '''
-    thread_nums = 16
+    thread_nums = 2
     sql = text("""
 SELECT DISTINCT b.doctor_id FROM raw_doctor_base_info AS b WHERE NOT EXISTS ( SELECT 1 FROM (SELECT DISTINCT doctor_id FROM raw_html_illness) AS a WHERE b.doctor_id=a.doctor_id LIMIT 0, 1 )    """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_question", sql=sql)

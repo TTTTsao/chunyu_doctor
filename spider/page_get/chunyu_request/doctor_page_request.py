@@ -147,7 +147,7 @@ def get_doctor_inquiry_detail_page(question_id):
         # 'Referer': f'https://www.chunyuyisheng.com/pc/doctor/{question_id}',
         'Connection': 'close',
     }
-    response = get(url, False, False, headers=headers)
+    response = get(url, False, True, headers=headers)
     if response is None:
         return None
     return response.text
