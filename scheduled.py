@@ -34,3 +34,4 @@ if __name__ == '__main__':
     sche.add_job(recommend_doctor_process, CronTrigger.from_crontab('35 6 * * *', timezone='Asia/Shanghai'))
     sche.add_job(doctor_anti_status_task_process, CronTrigger.from_crontab('1 12 * * *', timezone='Asia/Shanghai'))
     sche.add_job(doctor_status_task_process, CronTrigger.from_crontab('5 21 * * *', timezone='Asia/Shanghai'))
+    sche.start()
