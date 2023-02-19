@@ -16,8 +16,6 @@ logging_format: "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: 
 db:
 
 
-
-
 # proxy_pool
 proxy_url : 'jhao'
 JHao-proxy_url: http://120.79.159.242:49222/random

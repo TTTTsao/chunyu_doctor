@@ -253,6 +253,16 @@ class DoctorStatusOper(CommonOper):
         db_session.flush()
         db_session.commit()
 
+    @classmethod
+    @db_commit_decorator
+    def update_status_by_price(cls, data):
+        ds = cls.get_doctor_status_by_doctor_id(data.doctor_id)
+        ds.is_page_404 = data.is_page_404
+        ds.is_anti_crawl = data.is_anti_crawl
+        ds.is_price_exist = data.is_price_exist
+        db_session.flush()
+        db_session.commit()
+
 class DoctorHighFrequencyStatusOper(CommonOper):
     @classmethod
     def get_status_by_doc_id(cls, doctor_id):

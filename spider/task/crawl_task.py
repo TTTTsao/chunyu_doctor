@@ -131,7 +131,7 @@ def crawl_doctor_status_task():
     '''
     thread_nums = 16
     sql = text("""
-    SELECT distinct A.doctor_id FROM raw_doctor_base_info A WHERE (SELECT COUNT(1) AS num FROM estimate_doctor_crawl_status B WHERE A.doctor_id = B.doctor_id)=0 LIMIT 100000
+    SELECT DISTINCT b.doctor_id FROM raw_doctor_base_info AS b WHERE NOT EXISTS ( SELECT 1 FROM estimate_doctor_crawl_status AS a WHERE b.doctor_id=a.doctor_id LIMIT 0, 1 )
     """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_status", sql=sql)
 
@@ -149,7 +149,7 @@ def crawl_doctor_high_fruency_info_task():
     抓取【医生高频更新信息：price、comment_label】
     :return:
     '''
-    thread_nums = 20
+    thread_nums = 32
     sql = text("""select distinct doctor_id from estimate_doctor_crawl_status where is_price_exist=1""")
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_price_comment", sql=sql)
 
@@ -172,7 +172,7 @@ def crawl_doctor_question_task():
     '''
     thread_nums = 16
     sql = text("""
-    SELECT distinct b.doctor_id FROM raw_doctor_base_info b LEFT JOIN raw_html_illness a ON b.doctor_id=a.doctor_id WHERE a.doctor_id IS NULL LIMIT 100000
+    SELECT DISTINCT b.doctor_id FROM raw_doctor_base_info AS b WHERE NOT EXISTS ( SELECT 1 FROM raw_html_illness AS a WHERE b.doctor_id=a.doctor_id LIMIT 0, 1 )
     """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_question", sql=sql)
 

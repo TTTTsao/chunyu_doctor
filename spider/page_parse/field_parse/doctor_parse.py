@@ -536,7 +536,7 @@ def question_html_2_doctor_quesstion_clinic_and_html(question_id, html):
         dialog_str = ''
         for item in dialog_list:
             people = item.find(name='h6', class_='doctor-name').get_text()
-            dialog = item.find(name='p').get_text().strip()
+            dialog = item.find(name='p').get_text().strip().replace("\n", '')
             dialog_str = dialog_str + people + ":" + dialog + "\n"
 
         return IllnessInfo(

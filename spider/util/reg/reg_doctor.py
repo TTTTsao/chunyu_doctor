@@ -91,7 +91,8 @@ def get_reg_doctor_name(str):
     return doctor_name
 
 def get_reg_mobile_price(str):
-    price = int(re.search("(\d+)", str).group())
+    pattern = re.compile('图文咨询¥')
+    price = int(re.sub(pattern, '', str))
     return price
 
 if __name__ == '__main__':
@@ -103,7 +104,7 @@ if __name__ == '__main__':
     row_label_num = '[285]'
     row_reward_amount = '36元'
     doctor_name = "YAN ZI\xa0"
-    price = '图文咨询¥50'
+    price = '图文咨询¥-1'
     print(get_reg_mobile_price(price))
 
 

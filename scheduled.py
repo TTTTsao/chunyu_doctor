@@ -29,7 +29,7 @@ def recommend_doctor_process():
 
 if __name__ == '__main__':
     sche = BlockingScheduler(timezone='Asia/Shanghai')
-    # sche.add_job(hospital_high_frequency_process, CronTrigger.from_crontab('3 */4 * * *', timezone='Asia/Shanghai'))
+    sche.add_job(hospital_high_frequency_process, CronTrigger.from_crontab('3 */4 * * *', timezone='Asia/Shanghai'))
     sche.add_job(doctor_high_frenquency_process, CronTrigger.from_crontab('11 1 * * *', timezone='Asia/Shanghai'))
     sche.add_job(recommend_doctor_process, CronTrigger.from_crontab('35 6 * * *', timezone='Asia/Shanghai'))
     sche.add_job(doctor_anti_status_task_process, CronTrigger.from_crontab('1 12 * * *', timezone='Asia/Shanghai'))

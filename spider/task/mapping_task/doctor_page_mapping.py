@@ -169,11 +169,11 @@ def doctor_high_frequency_info_mapping(doctor_id):
         comment_data = dp.doctor_mobile_page_html_2_doctor_comment_label(doctor_id, html)
         if not check_db_today('raw_doctor_price', [{'k': 'doctor_id', "v": doctor_id}]):
             if price_data.doctor_price_type == '暂无问诊服务' or price_data is None:
-                pass
+                DoctorStatusOper.update_status_by_price(DoctorStatus(doctor_id=doctor_id, is_page_404=1, is_anti_crawl=1, is_price_exist=0))
             else:
                 DoctorPriceOper.add_one(price_data)
-        if not check_db_exist('raw_doctor_service_info', [{'k': 'doctor_id', "v": doctor_id}]) and serve_data is not None:
-            DoctorServiceInfoOper.update_service_info_by_doctor_id(serve_data)
+        if not check_db_today('raw_doctor_service_info', [{'k': 'doctor_id', "v": doctor_id}]) and serve_data is not None:
+            DoctorServiceInfoOper.add_one(serve_data)
         if not check_db_today('raw_doctor_comment_label', [{'k': 'doctor_id', "v": doctor_id}]) and comment_data is not None:
             DoctorCommentLabelOper.add_one(comment_data)
         DoctorHighFrequencyStatusOper.update_staus_with_data(DoctorHighFrequencyStatus(
