@@ -172,8 +172,7 @@ def crawl_doctor_question_task():
     '''
     thread_nums = 16
     sql = text("""
-    SELECT DISTINCT b.doctor_id FROM raw_doctor_base_info AS b WHERE NOT EXISTS ( SELECT 1 FROM raw_html_illness AS a WHERE b.doctor_id=a.doctor_id LIMIT 0, 1 )
-    """)
+SELECT DISTINCT b.doctor_id FROM raw_doctor_base_info AS b WHERE NOT EXISTS ( SELECT 1 FROM (SELECT DISTINCT doctor_id FROM raw_html_illness) AS a WHERE b.doctor_id=a.doctor_id LIMIT 0, 1 )    """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_question", sql=sql)
 
 def crawl_question_html_task():
