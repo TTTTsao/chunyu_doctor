@@ -269,14 +269,14 @@ def doctor_question_mapping(doctor_id):
                 while flag:
                     if cur_page == 1:
                         doctor_questions = dp.doctor_inquiry_json_2_doctor_question(doctor_id, json, item)
-                        if doctor_questions is not None: DoctorIllnessOper.add_illness_with_datas_query(doctor_questions)
+                        if doctor_questions is not None: DoctorIllnessOper.add_all(doctor_questions)
                         cur_page += 1
                         flag = json["has_more_page"]
                     else:
                         page_json = dr.get_doctor_illness_json_with_page(doctor_id, cur_page, item)
                         if cur_page == page_json["query_info"]["page"]:
                             doctor_questions = dp.doctor_inquiry_json_2_doctor_question(doctor_id, page_json, item)
-                            if doctor_questions is not None:DoctorIllnessOper.add_illness_with_datas_query(doctor_questions)
+                            if doctor_questions is not None:DoctorIllnessOper.add_all(doctor_questions)
                             cur_page += 1
                             flag = page_json["has_more_page"]
                         else:
@@ -287,14 +287,14 @@ def doctor_question_mapping(doctor_id):
             while flag:
                 if cur_page == 1:
                     doctor_questions = dp.doctor_inquiry_json_2_doctor_question(doctor_id, json, type_item=None)
-                    if doctor_questions is not None: DoctorIllnessOper.add_illness_with_datas_query(doctor_questions)
+                    if doctor_questions is not None: DoctorIllnessOper.add_all(doctor_questions)
                     cur_page += 1
                     flag = json["has_more_page"]
                 else:
                     page_json = dr.get_doctor_illness_json_with_page(doctor_id, cur_page, type_item=None)
                     if cur_page == page_json["query_info"]["page"]:
                         doctor_questions = dp.doctor_inquiry_json_2_doctor_question(doctor_id, page_json, type_item=None)
-                        if doctor_questions is not None:DoctorIllnessOper.add_illness_with_datas_query(doctor_questions)
+                        if doctor_questions is not None:DoctorIllnessOper.add_all(doctor_questions)
                         cur_page += 1
                         flag = page_json["has_more_page"]
                     else:
