@@ -120,7 +120,7 @@ def crawl_recommend_doctor_task():
     '''
     抓取【科室页面-每日推荐医生】
     '''
-    thread_nums = 3
+    thread_nums = 1
     sql = text("""select distinct clinic_id from raw_clinic""")
     __common_thread_task(thread_nums=thread_nums, queue_name="recommend_doctor", sql=sql)
 
@@ -195,10 +195,9 @@ def crawl_realtime_inquiry_task():
     __common_thread_task(thread_nums=thread_nums, queue_name="inquiry_doctor_nums", sql=sql)
 
 
-
 if __name__ == '__main__':
-    # crawl_recommend_doctor_task()
-    crawl_doctor_status_task()
+    crawl_recommend_doctor_task()
+    # crawl_doctor_status_task()
     # crawl_doctor_question_task()
     # crawl_question_html_task()
     # crawl_doctor_high_fruency_info_task()

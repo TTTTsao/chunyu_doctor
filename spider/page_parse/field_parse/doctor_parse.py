@@ -693,7 +693,7 @@ def clinic_html_2_doctor_img(clinic_id, html):
         for i in range(len(doctor_id_list)):
             doctor_id = get_reg_doctor_id(str(doctor_id_list[i]))
             doctor_img = str(doctor_img_url_list[i])
-            doctor_img_datas.append(DoctorBaseInfo(
+            doctor_img_datas.append(DoctorImg(
                 doctor_id=doctor_id,
                 doctor_img_remote_path=doctor_img
             ))

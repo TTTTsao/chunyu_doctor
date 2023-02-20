@@ -10,7 +10,7 @@ logger.remove()
 
 DOCTOR_URL = 'https://www.chunyuyisheng.com/pc/doctor/{}'
 DOCTOR_MOBILE_URL = 'https://m.chunyuyisheng.com/m/doctor/{}'
-RECOMMEND_DOCTOR_URL = 'https://chunyuyisheng.com/pc/doctors/0-0-{}?page={}'
+RECOMMEND_DOCTOR_URL = 'https://chunyuyisheng.com/pc/doctors/0-0-{}/?page={}'
 RECOMMEND_AVAILABLE_DOCTOR_URL = 'https://www.chunyuyisheng.com/pc/doctors/0-0-{}/?is_available=1&page={}'
 INQUIRY_URL = 'https://www.chunyuyisheng.com/pc/qa/{}'
 ILLNESS_BASE_URL = 'https://www.chunyuyisheng.com/pc/doctor/{}/qa/?is_json=1&tag=&page_count=20&page=1'

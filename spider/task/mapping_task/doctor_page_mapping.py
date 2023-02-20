@@ -37,14 +37,14 @@ def recommend_doctor_mapping(clinic_id):
             doctor_img_datas = dp.clinic_html_2_doctor_img(clinic_id, html)
             hospital_base_datas = dp.clinci_html_2_hospital_base(clinic_id, html)
 
-            DoctorRecommendOper.add_doctor_recommend_with_query(recommend_doctors)
+            DoctorRecommendOper.add_all(recommend_doctors)
             DoctorBaseInfoOper.add_doctor_base_with_query(doctor_base_datas)
             DoctorImgOper.add_doctor_img_with_query(doctor_img_datas)
             HospitalOper.add_hospital_base_with_query(hospital_base_datas)
 
             time.sleep(random.uniform(1, 2))
             logger.info("科室 {} 第 {} 页抓取完毕".format(clinic_id, page))
-            page += 1
+        page += 1
     logger.info("科室 {} 抓取完毕".format(clinic_id))
 
 @crawl_decorator
@@ -340,4 +340,4 @@ def doctor_serve_mapping(doctor_id):
         if not check_db_exist("raw_doctor_service_info", [{'k': 'doctor_id', "v": doctor_id}]) and serve_data is not None:
             DoctorServiceInfoOper.add_one(serve_data)
         elif serve_data is not None:
-            DoctorServiceInfoOper.update_service_info_by_doctor_id(serve_data)
+            DoctorServiceInfoOper.add_one(serve_data)
