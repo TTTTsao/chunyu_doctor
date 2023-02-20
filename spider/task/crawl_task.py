@@ -190,7 +190,7 @@ def crawl_realtime_inquiry_task():
     抓取【医院实时可咨询医生数信息】
     :return:
     '''
-    thread_nums = 8
+    thread_nums = 2
     sql = text("""select distinct hospital_id from raw_hospital""")
     __common_thread_task(thread_nums=thread_nums, queue_name="inquiry_doctor_nums", sql=sql)
 
