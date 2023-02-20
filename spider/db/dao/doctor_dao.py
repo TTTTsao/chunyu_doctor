@@ -316,6 +316,12 @@ class DoctorLowFrequencyStatusOper(CommonOper):
             db_session.flush()
             db_session.commit()
 
+class DialogOper(CommonOper):
+    @classmethod
+    def get_status_by_question_id(cls, question_id):
+        return db_session.query(Dialog).filter(Dialog.inquiry_question_id == question_id).first()
+
+
 
 
 

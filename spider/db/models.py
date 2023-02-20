@@ -95,3 +95,7 @@ class Clinic(Base):
     __table__ = raw_clinic
     __table_args__ = ({'comment': '科室基本信息表（非医院详细科室）'})
 
+class Dialog(Base):
+    __table__ = raw_inquiry_dialog
+    __table_args__ = ({'comment': '医生问诊对话详情（低频-半年）'})
+

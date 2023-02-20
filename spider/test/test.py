@@ -9,8 +9,8 @@ from spider.page_parse.basic import is_mobile_price_exist
 # doctor_id = 'clinic_web_2f8e3f26201fe950'
 url = 'https://www.chunyuyisheng.com/pc/doctor/clinic_web_fa2e2aadbeb99583/'
 doctor_id = 'clinic_web_fa2e2aadbeb99583'
-question_url = 'https://www.chunyuyisheng.com/pc/9WnZfD6rffG8gTtOHrn29g'
-question_id = '9WnZfD6rffG8gTtOHrn29g'
+question_url = 'https://www.chunyuyisheng.com/pc/6VVj_4YDKPEkKYbYAYoq0/'
+question_id = '6VVj_4YDKPEkKYbYAYoq0A'
 
 if __name__ == '__main__':
     html = get_doctor_inquiry_detail_page(question_id)
@@ -25,17 +25,18 @@ if __name__ == '__main__':
     print("总对话次数为", dialog_str.count("\n"), "次")
     print("患者发送次数为", dialog_str.count("患者："), "次")
     print("医生发送次数为", dialog_str.count("医生："), "次")
+    print("图片交流次数", dialog_str.count("图片因隐私问题无法显示"))
+    print("音频交流次数", dialog_str.count("audio"))
     # 判断回复类型中是否存在文字/音频/图片
-
-
     count_list = dialog_str.split("\n")
+    print("最后回复人及内容", count_list[len(count_list)-2])
     for item in count_list:
-        if "医生：" in item and "audio" not in item:
+        if "医生：" in item and "audio" not in item and "图片因隐私问题无法显示" not in item:
             # 判断医生回复中是否存在【图片】和【音频】类型
             print(item)
             str_num = item.split("：")[1]
             print(len(str_num), str_num)
-            pass
+
 
 
 

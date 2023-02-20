@@ -526,7 +526,7 @@ def question_html_2_doctor_quesstion_clinic_and_html(question_id, html):
     解析医生好评问题对话html页面
     :param question_id: 问题id
     :param html: 好评问题详情页面
-    :return: 医生好评问题不完整对象/None（错误）
+    :return: 医生问诊对话对象/None（错误）
     '''
     xpath = etree.HTML(html)
     soup = BeautifulSoup(html, 'lxml')
@@ -539,10 +539,10 @@ def question_html_2_doctor_quesstion_clinic_and_html(question_id, html):
             dialog = item.find(name='p').get_text().strip().replace("\n", '')
             dialog_str = dialog_str + people + ":" + dialog + "\n"
 
-        return IllnessInfo(
-            illness_question_id=question_id,
+        return Dialog(
+            inquiry_question_id=question_id,
             clinic_id=clinic_id,
-            illness_detail_html=dialog_str
+            inquiry_dialog=dialog_str
         )
     except Exception as e:
         logger.info("解析医生 {} 问诊对话页面信息失败，错误详情 {}".format(question_id, e))

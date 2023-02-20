@@ -1,10 +1,8 @@
 import random
 import time
-import datetime
 
 from spider.db.dao.doctor_dao import *
 from spider.db.dao.hospital_dao import *
-from spider.db.dao.clinic_dao import ClinicOper
 
 from spider.page_get.chunyu_request import doctor_page_request as dr
 from spider.page_parse.field_parse import doctor_parse as dp
@@ -130,11 +128,10 @@ def doctor_info_mapping(html):
         DoctorBaseInfoOper.add_one(doctor_base)
     if not check_db_today('raw_doctor_price', [{'k': 'doctor_id', "v": doctor_id}]):
         if doctor_price.doctor_price_type == '暂无问诊服务' or doctor_price is None:
-            pass
+            DoctorStatusOper.update_status_by_price(DoctorStatus(doctor_id=doctor_id, is_page_404=1, is_anti_crawl=1, is_price_exist=0))
         else:
             DoctorPriceOper.add_one(doctor_price)
-    if not check_db_today('raw_doctor_comment_label', [{'k': 'doctor_id', "v": doctor_id}]) and doctor_comment is not None:
-        DoctorCommentLabelOper.add_one(doctor_comment)
+            DoctorCommentLabelOper.add_one(doctor_comment)
     if not check_db_interval('raw_doctor_reward', [{'k': 'doctor_id', "v": doctor_id}], 24 * 30) and doctor_reward is not None:
         DoctorRewardOper.add_all(doctor_reward)
 
@@ -144,44 +141,31 @@ def doctor_high_frequency_info_mapping(doctor_id):
     '''
     【医生高频更新信息-日更】
     医生价格
-    医生服务信息(会被反爬，不做增加，只做更新)
+    医生服务信息(难以日更)
     医生评价标签数量
     :param doctor_id: 医生id
     :return:
     '''
-    html = dr.get_doctor_moblie_detail_page(doctor_id)
-    if html is None:
-        logger.warning("医生 {} 页面为None".format(doctor_id))
-        doctor_high_frequency_data = dp.anti_crawl_doctor_high_frequency_status(doctor_id)
-        DoctorHighFrequencyStatusOper.update_staus_with_data(doctor_high_frequency_data)
-    elif is_404(html):
-        logger.warning("医生 {} 页面为 404 页面".format(doctor_id))
-        doctor_status_data = dp.return_404_doctor_status(doctor_id)
-        DoctorStatusOper.update_status_by_data(doctor_status_data)
-    elif not is_doctor_mobile_detail_page_right(doctor_id, html):
-        logger.warning("医生 {} 页面被反爬，稍后重新爬取".format(doctor_id))
-        doctor_high_frequency_data = dp.anti_crawl_doctor_high_frequency_status(doctor_id)
-        DoctorHighFrequencyStatusOper.update_staus_with_data(doctor_high_frequency_data)
-        doctor_info_mapping(html)
-    else:
-        price_data = dp.doctor_mobile_page_html_2_doctor_price(doctor_id, html)
-        serve_data = dp.doctor_mobile_page_html_2_doctor_service_info(doctor_id, html)
-        comment_data = dp.doctor_mobile_page_html_2_doctor_comment_label(doctor_id, html)
-        if not check_db_today('raw_doctor_price', [{'k': 'doctor_id', "v": doctor_id}]):
+    if not check_db_today('raw_doctor_price', [{'k': 'doctor_id', "v": doctor_id}]):
+        html = dr.get_doctor_moblie_detail_page(doctor_id)
+        if html is None:
+            logger.warning("医生 {} 页面为None".format(doctor_id))
+        elif is_404(html):
+            logger.warning("医生 {} 页面为 404 页面".format(doctor_id))
+        elif not is_doctor_mobile_detail_page_right(doctor_id, html):
+            logger.warning("医生 {} 页面被反爬，稍后重新爬取".format(doctor_id))
+            doctor_info_mapping(html)
+        else:
+            price_data = dp.doctor_mobile_page_html_2_doctor_price(doctor_id, html)
+            serve_data = dp.doctor_mobile_page_html_2_doctor_service_info(doctor_id, html)
+            comment_data = dp.doctor_mobile_page_html_2_doctor_comment_label(doctor_id, html)
+
             if price_data.doctor_price_type == '暂无问诊服务' or price_data is None:
                 DoctorStatusOper.update_status_by_price(DoctorStatus(doctor_id=doctor_id, is_page_404=1, is_anti_crawl=1, is_price_exist=0))
-            else:
-                DoctorPriceOper.add_one(price_data)
-        if not check_db_today('raw_doctor_service_info', [{'k': 'doctor_id', "v": doctor_id}]) and serve_data is not None:
-            DoctorServiceInfoOper.add_one(serve_data)
-        if not check_db_today('raw_doctor_comment_label', [{'k': 'doctor_id', "v": doctor_id}]) and comment_data is not None:
-            DoctorCommentLabelOper.add_one(comment_data)
-        DoctorHighFrequencyStatusOper.update_staus_with_data(DoctorHighFrequencyStatus(
-            doctor_id=doctor_id,
-            is_price_crawl=1,
-            is_service_info_crawl=1,
-            is_comment_label_crawl=1
-        ))
+            else: DoctorPriceOper.add_one(price_data)
+            if serve_data is not None:DoctorServiceInfoOper.add_one(serve_data)
+            if comment_data is not None: DoctorCommentLabelOper.add_one(comment_data)
+
 
 @crawl_decorator
 def doctor_mid_frequency_info_mapping(doctor_id, interval_hours):
@@ -215,36 +199,23 @@ def doctor_low_frequency_info_mapping(doctor_id):
     医生个人标签信息
     医生简介信息
     :param doctor_id:
-    :param interval_hours:
     :return:
     '''
-    html = dr.get_doctor_detail_page(doctor_id)
-    if html is None:
-        logger.warning("医生 {} 页面为None".format(doctor_id))
-    elif is_404(html):
-        logger.warning("医生 {} 页面为 404 页面".format(doctor_id))
-    elif not is_doctor_detail_page_right(doctor_id, html):
-        logger.warning("医生 {} 页面被反爬，稍后重新爬取".format(doctor_id))
-    else:
-        auth_data = dp.doctor_page_html_2_doctor_auth_info(doctor_id, html)
-        if not check_db_exist("raw_doctor_auth_info", [{'k': 'doctor_id', "v": doctor_id}]) and auth_data is not None:
-            DoctorAuthInfoOper.add_one(auth_data)
-        elif auth_data is not None:
-            DoctorAuthInfoOper.update_auth_info_by_doctor_id(auth_data)
-        tag_data = dp.doctor_page_html_2_doctor_tag(doctor_id, html)
-        if not check_db_exist("raw_doctor_tag", [{'k': 'doctor_id', "v": doctor_id}]) and tag_data is not None:
-            DoctorTagOper.add_one(tag_data)
-        elif tag_data is not None:
-            DoctorTagOper.update_tag_by_doctor_id(tag_data)
-        des_data = dp.doctor_page_html_2_doctor_description(doctor_id, html)
-        if not check_db_exist("raw_doctor_description", [{'k': 'doctor_id', "v": doctor_id}]) and des_data is not None:
-            DoctorDescriptionOper.add_one(des_data)
-        elif des_data is not None:
-            DoctorDescriptionOper(des_data)
-        hospital, clinic, hospital_clinic = dp.doctor_page_html_2_hospital_and_clinic_base(doctor_id, html)
-        if not check_db_exist("raw_hospital", [{'k': 'hospital_id', "v": hospital.hospital_id}]) and hospital is not None:HospitalOper.add_one(hospital)
-        if not check_db_exist("raw_hospital_clinic_base_info", [{'k': 'hospital_clinic_id', "v": clinic.hospital_clinic_id}]) and clinic is not None:HospitalClinicBaseInfoOper.add_one(clinic)
-        if not check_db_exist("raw_hospital_clinic_enter_doctor", [{'k': 'hospital_clinic_id', "v": hospital_clinic.hospital_clinic_id}]) and hospital_clinic is not None:HospitalClinicEnterDoctorOper.add_one(hospital_clinic)
+    if not check_db_exist("raw_doctor_auth_info", [{'k': 'doctor_id', "v": doctor_id}]):
+        html = dr.get_doctor_detail_page(doctor_id)
+        if html is None:
+            logger.warning("医生 {} 页面为None".format(doctor_id))
+        elif is_404(html):
+            logger.warning("医生 {} 页面为 404 页面".format(doctor_id))
+        elif not is_doctor_detail_page_right(doctor_id, html):
+            logger.warning("医生 {} 页面被反爬，稍后重新爬取".format(doctor_id))
+        else:
+            auth_data = dp.doctor_page_html_2_doctor_auth_info(doctor_id, html)
+            if auth_data is not None: DoctorAuthInfoOper.add_one(auth_data)
+            tag_data = dp.doctor_page_html_2_doctor_tag(doctor_id, html)
+            if tag_data is not None: DoctorTagOper.add_one(tag_data)
+            des_data = dp.doctor_page_html_2_doctor_description(doctor_id, html)
+            if des_data is not None: DoctorDescriptionOper.add_one(des_data)
 
 
 @crawl_decorator
@@ -258,7 +229,7 @@ def doctor_question_mapping(doctor_id):
     if json is None:
         logger.warning("医生 {} 好评问题为None".format(doctor_id))
     else:
-        hot_json = json["hot_consults"]
+        hot_json = json["hot_consults"] if json["hot_consults"] else None
         if hot_json is not None:
             hot_consults = []
             for item in hot_json:
@@ -309,18 +280,20 @@ def question_html_mapping(question_id):
     :param question_id: 医生id
     :return:
     '''
-    html = dr.get_doctor_inquiry_detail_page(question_id)
-    if html is None:
-        logger.warning("医生问诊对话 {} 页面为None".format(question_id))
-    elif is_404(html):
-        logger.warning("医生问诊对话 {} 页面为 404 页面".format(question_id))
-    elif not is_illness_detail_page_right(question_id, html):
-        logger.warning("医生问诊对话 {} 页面被反爬，稍后重新爬取".format(question_id))
-    else:
-        illness_data = dp.question_html_2_doctor_quesstion_clinic_and_html(question_id, html)
-        if illness_data is not None: DoctorIllnessOper.update_illness_by_question_id(illness_data)
+    if not check_db_exist("raw_inquiry_dialog", [{'k': 'inquiry_question_id', "v": question_id}]):
+        html = dr.get_doctor_inquiry_detail_page(question_id)
+        if html is None:
+            logger.warning("医生问诊对话 {} 页面为None".format(question_id))
+        elif is_404(html):
+            logger.warning("医生问诊对话 {} 页面为 404 页面".format(question_id))
+        elif not is_illness_detail_page_right(question_id, html):
+            logger.warning("医生问诊对话 {} 页面被反爬，稍后重新爬取".format(question_id))
+        else:
+            dialog_data = dp.question_html_2_doctor_quesstion_clinic_and_html(question_id, html)
+            if dialog_data is not None: DialogOper.add_one(dialog_data)
 
 
+@crawl_decorator
 def doctor_serve_mapping(doctor_id):
     '''
     【医生中频更新信息】：当存在于base_info中而不存在于此

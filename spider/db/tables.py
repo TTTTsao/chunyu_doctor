@@ -262,10 +262,19 @@ raw_clinic = Table("raw_clinic", metadata,
                    Column("updated_at", TIMESTAMP, comment="更新时间"),
                    )
 
+# raw_inquiry_dialog
+raw_inquiry_dialog = Table("raw_inquiry_dialog", metadata,
+                           Column("id", INTEGER, primary_key=True, autoincrement=True, comment="自增id"),
+                           Column("inquiry_question_id", String(255), comment="问题id"),
+                           Column("clinic_id", String(50), comment="科室id"),
+                           Column("inquiry_dialog", Text, comment="提问问答详情html"),
+                           Column("created_at", DateTime, default=datetime.datetime.now, comment="抓取时间"),
+                           Column("updated_at", TIMESTAMP(True), nullable=False, comment="更新时间"),
+                           )
 
 
 __all__ = ['doctor_base_info', 'doctor_img', 'doctor_auth_info', 'doctor_tag', 'doctor_service_info', 'doctor_price', 'doctor_description',
            'doctor_comment_label', 'doctor_reward', 'hospital', 'hospital_clinic_enter_doctor', 'hospital_real_time_inquiry',
            'hospital_clinic_base_info', 'hospital_rank', 'hospital_clinic_rank', 'doctor_hospital_relationship', 'recommend_doctor',
            'estimate_doctor_crawl_status', 'estimate_doctor_high_frequency_info_status',
-           'estimate_doctor_mid_frequency_info_status', 'estimate_doctor_low_frequency_info_status', 'raw_clinic']
+           'estimate_doctor_mid_frequency_info_status', 'estimate_doctor_low_frequency_info_status', 'raw_clinic', 'raw_inquiry_dialog']
