@@ -528,10 +528,9 @@ def question_html_2_doctor_quesstion_clinic_and_html(question_id, html):
     :param html: 好评问题详情页面
     :return: 医生问诊对话对象/None（错误）
     '''
-    xpath = etree.HTML(html)
     soup = BeautifulSoup(html, 'lxml')
     try:
-        clinic_id = xpath.xpath("//div[@class='bread-crumb-spacial']/a/text()")[0]
+        clinic_name = soup.find(name='div', class_="bread-crumb-spacial").find(name='a').get_text()
         dialog_list = soup.find_all(name='div', class_='context-left')
         dialog_str = ''
         for item in dialog_list:
@@ -541,7 +540,7 @@ def question_html_2_doctor_quesstion_clinic_and_html(question_id, html):
 
         return Dialog(
             inquiry_question_id=question_id,
-            clinic_id=clinic_id,
+            clinic_name=clinic_name,
             inquiry_dialog=dialog_str
         )
     except Exception as e:

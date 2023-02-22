@@ -158,9 +158,9 @@ def crawl_doctor_low_fruency_info_task():
     抓取【医生低频更新信息：auth、tag、description】
     :return:
     '''
-    thread_nums = 10
+    thread_nums = 5
     sql = text("""
-    SELECT distinct A.doctor_id FROM estimate_doctor_crawl_status A WHERE (SELECT COUNT(1) AS num FROM raw_doctor_auth_info B WHERE A.doctor_id = B.doctor_id and A.is_page_404=1 )=0 LIMIT 100000
+    SELECT DISTINCT b.doctor_id FROM estimate_doctor_crawl_status AS b WHERE NOT EXISTS ( SELECT 1 FROM raw_doctor_auth_info AS a WHERE b.doctor_id=a.doctor_id and b.is_page_404=1 LIMIT 0, 1 )
     """)
     __common_thread_task(thread_nums=thread_nums, queue_name="doctor_auth_des_tag", sql=sql)
 
@@ -181,7 +181,10 @@ def crawl_question_html_task():
     :return:
     '''
     thread_nums = 1
-    sql = text("""select distinct illness_question_id from raw_html_illness where illness_detail_html is null or illness_detail_html=0""")
+    # sql = text("""
+    #     SELECT DISTINCT b.illness_question_id FROM raw_html_illness AS b WHERE NOT EXISTS ( SELECT 1 FROM (SELECT DISTINCT inquiry_question_id FROM raw_inquiry_dialog) AS a WHERE b.illness_question_id=a.inquiry_question_id LIMIT 0, 1 )
+    # """)
+    sql = text("""SELECT DISTINCT illness_question_id FROM raw_html_illness WHERE illness_type LIKE '粉刺' """)
     __common_thread_task(thread_nums=thread_nums, queue_name="question_html", sql=sql)
 
 

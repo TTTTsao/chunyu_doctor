@@ -25,7 +25,7 @@ def __check_response_status(response):
     if response is None:
         return True
     elif response.status_code == 404:
-        return response
+        return False
     elif response.status_code != 200 and response.status_code != 201:
         return True
     return False

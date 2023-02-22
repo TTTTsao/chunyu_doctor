@@ -1,6 +1,6 @@
 
 from lxml import etree
-
+from bs4 import BeautifulSoup
 from decimal import Decimal
 from spider.decorators.parse_decorator import parse_decorator
 from spider.db.dao.doctor_dao import (DoctorBaseInfoOper, DoctorIllnessOper)
@@ -28,7 +28,6 @@ def is_404(html):
 def is_page_has_no_info(html):
     try:
         if '暂无相关信息' in html:
-            logger.warning("该页面暂无医生相关信息")
             return True
         else:
             return False
@@ -91,15 +90,13 @@ def is_illness_detail_page_right(question_id, html):
     :param html:
     :return:
     '''
-    doctor_id = DoctorIllnessOper.get_doctor_id_by_question_id(question_id)
-    xpath = etree.HTML(html)
-    row_page_doctor_id = str(xpath.xpath("//div[@class='bread-crumb-top']/a[3]/@href")[0])
-    page_doctor_id = get_reg_doctor_id(row_page_doctor_id)
-
-    if doctor_id == page_doctor_id:
+    soup = BeautifulSoup(html, "lxml")
+    page_question_id = soup.find(name="div", class_="js-info")["data-problem"]
+    if question_id == page_question_id:
         return True
     else:
         return False
+
 
 def is_price_exist(xpath):
     '''
@@ -209,3 +206,4 @@ def is_reward_exist(html):
     except Exception as e:
         logger.warning("判断医生详情页的reward是否存在出错，详情 {}".format(e))
         return False
+

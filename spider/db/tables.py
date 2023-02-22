@@ -25,7 +25,7 @@ doctor_img = Table('raw_doctor_img', metadata,
                    )
 
 # raw_doctor_auth_info
-doctor_auth_info = Table('raw_doctor_auth_info', metadata,
+doctor_auth_info = Table('raw_doctor_auth_info_update', metadata,
                          Column("id", INTEGER, primary_key=True, autoincrement=True, comment="自增id"),
                          Column("doctor_id", String(50), comment="医生id"),
                          Column("doctor_auth_status", SMALLINT, comment="医生认证状态"),
@@ -38,7 +38,7 @@ doctor_auth_info = Table('raw_doctor_auth_info', metadata,
                          )
 
 # raw_doctor_tag
-doctor_tag = Table('raw_doctor_tag', metadata,
+doctor_tag = Table('raw_doctor_tag_update', metadata,
                    Column("id", INTEGER, primary_key=True, autoincrement=True, comment="自增id"),
                    Column("doctor_id", String(50), comment="医生id"),
                    Column("tag_content", JSON, comment="医生标签（JSON格式存储）"),
@@ -71,7 +71,7 @@ doctor_price = Table('raw_doctor_price', metadata,
                      )
 
 # raw_doctor_description
-doctor_description = Table('raw_doctor_description', metadata,
+doctor_description = Table('raw_doctor_description_update', metadata,
                            Column("id", INTEGER, primary_key=True, autoincrement=True, comment="自增id"),
                            Column("doctor_id", String(50), comment="医生id"),
                            Column("doctor_description_edu_background", Text, comment="医生医学教育背景"),
@@ -233,7 +233,7 @@ estimate_doctor_high_frequency_info_status = Table('estimate_doctor_high_frequen
                                                    Column("updated_at", TIMESTAMP, comment="更新时间"),
                                                    )
 
-# estimate_doctor_mid_frequency_info_status
+# estimate_doctor_mid_frequency_info_status（废弃）
 estimate_doctor_mid_frequency_info_status = Table('estimate_doctor_mid_frequency_info_status', metadata,
                                                   Column("id", INTEGER, primary_key=True, autoincrement=True,comment="自增id"),
                                                   Column("doctor_id", String(50), comment="医生id"),
@@ -242,7 +242,7 @@ estimate_doctor_mid_frequency_info_status = Table('estimate_doctor_mid_frequency
                                                   Column("updated_at", TIMESTAMP, comment="更新时间"),
                                                   )
 
-# estimate_doctor_low_frequency_info_status
+# estimate_doctor_low_frequency_info_status（废弃）
 estimate_doctor_low_frequency_info_status = Table('estimate_doctor_low_frequency_info_status', metadata,
                                                   Column("id", INTEGER, primary_key=True, autoincrement=True,comment="自增id"),
                                                   Column("doctor_id", String(50), comment="医生id"),
@@ -266,7 +266,7 @@ raw_clinic = Table("raw_clinic", metadata,
 raw_inquiry_dialog = Table("raw_inquiry_dialog", metadata,
                            Column("id", INTEGER, primary_key=True, autoincrement=True, comment="自增id"),
                            Column("inquiry_question_id", String(255), comment="问题id"),
-                           Column("clinic_id", String(50), comment="科室id"),
+                           Column("clinic_name", String(50), comment="科室名"),
                            Column("inquiry_dialog", Text, comment="提问问答详情html"),
                            Column("created_at", DateTime, default=datetime.datetime.now, comment="抓取时间"),
                            Column("updated_at", TIMESTAMP(True), nullable=False, comment="更新时间"),

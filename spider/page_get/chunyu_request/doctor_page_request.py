@@ -144,7 +144,6 @@ def get_doctor_inquiry_detail_page(question_id):
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'en,zh-CN;q=0.9,zh;q=0.8',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        # 'Referer': f'https://www.chunyuyisheng.com/pc/doctor/{question_id}',
         'Connection': 'close',
     }
     response = get(url, False, True, headers=headers)

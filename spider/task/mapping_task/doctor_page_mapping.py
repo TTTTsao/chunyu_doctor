@@ -282,6 +282,7 @@ def question_html_mapping(question_id):
     '''
     if not check_db_exist("raw_inquiry_dialog", [{'k': 'inquiry_question_id', "v": question_id}]):
         html = dr.get_doctor_inquiry_detail_page(question_id)
+        time.sleep(random.uniform(1, 2))
         if html is None:
             logger.warning("医生问诊对话 {} 页面为None".format(question_id))
         elif is_404(html):

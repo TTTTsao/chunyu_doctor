@@ -7,7 +7,7 @@ from spider.util.reg.reg_hospital import (get_reg_hospital_id, get_reg_province_
 from spider.decorators.parse_decorator import parse_decorator
 
 
-HOSPITAL_RANK_URL = 'https://chunyuyisheng.com//pc/hospitallist/{}/{}'
+HOSPITAL_RANK_URL = 'https://chunyuyisheng.com/pc/hospitallist/{}/{}'
 
 @parse_decorator(False)
 def get_hospital_list_from_province(html):
@@ -34,7 +34,7 @@ def get_hospital_list_from_province(html):
             hospital_list.append(temp_list)
     return hospital_list
 
-@parse_decorator
+@parse_decorator(False)
 def get_hospital_province_list(html):
     '''
     get province id list of hospital
