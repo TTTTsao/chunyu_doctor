@@ -180,11 +180,13 @@ def crawl_question_html_task():
     抓取【医生问诊对话详情html信息（html）】
     :return:
     '''
-    thread_nums = 1
+    thread_nums = 2
     # sql = text("""
     #     SELECT DISTINCT b.illness_question_id FROM raw_html_illness AS b WHERE NOT EXISTS ( SELECT 1 FROM (SELECT DISTINCT inquiry_question_id FROM raw_inquiry_dialog) AS a WHERE b.illness_question_id=a.inquiry_question_id LIMIT 0, 1 )
     # """)
-    sql = text("""SELECT DISTINCT illness_question_id FROM raw_html_illness WHERE illness_type LIKE '粉刺' """)
+    sql = text("""
+    SELECT DISTINCT illness_question_id, illness_type FROM raw_html_illness WHERE illness_type LIKE '疤痕疙瘩' OR illness_type LIKE '口腔溃疡' OR illness_type LIKE '龋齿' OR illness_type LIKE '睡眠障碍' OR illness_type LIKE '散光' OR illness_type LIKE '近视眼' OR illness_type LIKE '焦虑症'
+    """)
     __common_thread_task(thread_nums=thread_nums, queue_name="question_html", sql=sql)
 
 

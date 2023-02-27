@@ -94,16 +94,16 @@ doctor_comment_label = Table('raw_doctor_comment_label', metadata,
                              Column("updated_at", TIMESTAMP(True), nullable=False, comment="更新时间"),
                              )
 
-# raw_html_illness
-illness_info = Table('raw_html_illness', metadata,
+# raw_illness
+illness_info = Table('raw_illness', metadata,
                      Column("id", INTEGER, primary_key=True, autoincrement=True, comment="自增id"),
                      Column("doctor_id", String(50), comment="医生id"),
                      Column("illness_question_id", String(255), comment="问题id"),
-                     Column("clinic_id", String(50), comment="科室id"),
                      Column("illness_type", String(32), comment="问题类型"),
                      Column("illness_time", DateTime, comment="提问时间"),
                      Column("illness_title", String(255), comment="提问题目"),
-                     Column("illness_detail_html", Text, comment="提问问答详情html"),
+                     Column("illness_ask", String(255), comment="患者首次提问语句"),
+                     Column("illness_answer", String(255), comment="医生首次回复语句"),
                      Column("created_at", DateTime, default=datetime.datetime.now,  comment="抓取时间"),
                      Column("updated_at", TIMESTAMP(True), nullable=False, comment="更新时间"),
                      )

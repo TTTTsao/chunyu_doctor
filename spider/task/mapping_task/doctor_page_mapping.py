@@ -201,7 +201,7 @@ def doctor_low_frequency_info_mapping(doctor_id):
     :param doctor_id:
     :return:
     '''
-    if not check_db_exist("raw_doctor_auth_info", [{'k': 'doctor_id', "v": doctor_id}]):
+    if not check_db_exist("raw_doctor_auth_info_update", [{'k': 'doctor_id', "v": doctor_id}]):
         html = dr.get_doctor_detail_page(doctor_id)
         if html is None:
             logger.warning("医生 {} 页面为None".format(doctor_id))
@@ -221,6 +221,7 @@ def doctor_low_frequency_info_mapping(doctor_id):
 @crawl_decorator
 def doctor_question_mapping(doctor_id):
     '''
+    TODO 修改为：获取所有json分页统一返回解析
     医生问诊对话部分信息（ajax获取）
     :param doctor_id: 医生id
     :return:
@@ -229,12 +230,9 @@ def doctor_question_mapping(doctor_id):
     if json is None:
         logger.warning("医生 {} 好评问题为None".format(doctor_id))
     else:
-        hot_json = json["hot_consults"] if json["hot_consults"] else None
+        hot_json = json["hot_consults"] if (json["hot_consults"] is not None and len(json["hot_consults"]) > 0) else None
         if hot_json is not None:
-            hot_consults = []
-            for item in hot_json:
-                hot_consults.append(item["keywords"])
-            for item in hot_consults:
+            for item in hot_json["keywords"]:
                 cur_page = 1
                 flag = True
                 while flag:
@@ -252,7 +250,7 @@ def doctor_question_mapping(doctor_id):
                             flag = page_json["has_more_page"]
                         else:
                             flag = False
-        elif json["problem_list"] is not None:
+        elif json["problem_list"] is not None and len(json["problem_list"]) > 0:
             cur_page = 1
             flag = True
             while flag:

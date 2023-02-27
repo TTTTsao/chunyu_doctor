@@ -8,13 +8,27 @@ from spider.page_parse.basic import *
 # url = 'https://m.chunyuyisheng.com/m/doctor/clinic_web_2f8e3f26201fe950/'
 # doctor_id = 'clinic_web_2f8e3f26201fe950'
 url = 'https://www.chunyuyisheng.com/pc/doctor/clinic_web_fa2e2aadbeb99583/'
-doctor_id = 'clinic_web_fa2e2aadbeb99583'
+# doctor_id = 'clinic_web_fa2e2aadbeb99583'
+doctor_id = 'clinic_web_4d8017cdddc4b201'
 question_url = 'https://www.chunyuyisheng.com/pc/qa/6VVj_4YDKPEkKYbYAYoq0A/'
 question_id = '6VVj_4YDKPEkKYbYAYoq0A'
 
 if __name__ == '__main__':
-    html = get_doctor_inquiry_detail_page(question_id)
-    print(is_illness_detail_page_right(question_id, html))
+    # html = get_doctor_inquiry_detail_page(question_id)
+    # print(is_illness_detail_page_right(question_id, html))
+    json = get_doctor_illness_init_json(doctor_id)
+    hot_json = json["hot_consults"]
+    print(hot_json)
+    print(len(hot_json) == 0)
+    print(hot_json is not None and len(hot_json) != 0)
+
+
+
+
+
+
+
+
     # soup = BeautifulSoup(html, 'lxml')
     # clinic_name = soup.find(name='div', class_="bread-crumb-spacial").find(name='a').get_text()
     # print("clinic_name", clinic_name)

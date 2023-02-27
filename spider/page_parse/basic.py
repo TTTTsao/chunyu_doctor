@@ -60,11 +60,9 @@ def is_doctor_detail_page_right(doctor_id, html):
     :param html:医生pc详情页
     :return:是否被反爬
     '''
-    name = DoctorBaseInfoOper.get_doctor_name_by_doctor_id(doctor_id)
-    xpath = etree.HTML(html)
-    page_name = str(xpath.xpath("//div[@class='doctor-info-item']/div[@class='detail']/div[1]/span[@class='name']/text()")[0])
-
-    if name == page_name:
+    soup = BeautifulSoup(html, "lxml")
+    page_id = soup.find(name="ul", id="hot-qa-tags")["data-doctor-id"]
+    if doctor_id == page_id:
         return True
     else:
         return False
