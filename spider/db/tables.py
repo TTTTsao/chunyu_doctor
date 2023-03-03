@@ -274,7 +274,7 @@ raw_inquiry_dialog = Table("raw_inquiry_dialog", metadata,
 
 
 __all__ = ['doctor_base_info', 'doctor_img', 'doctor_auth_info', 'doctor_tag', 'doctor_service_info', 'doctor_price', 'doctor_description',
-           'doctor_comment_label', 'doctor_reward', 'hospital', 'hospital_clinic_enter_doctor', 'hospital_real_time_inquiry',
+           'doctor_comment_label', 'doctor_reward', 'illness_info', 'hospital', 'hospital_clinic_enter_doctor', 'hospital_real_time_inquiry',
            'hospital_clinic_base_info', 'hospital_rank', 'hospital_clinic_rank', 'doctor_hospital_relationship', 'recommend_doctor',
            'estimate_doctor_crawl_status', 'estimate_doctor_high_frequency_info_status',
            'estimate_doctor_mid_frequency_info_status', 'estimate_doctor_low_frequency_info_status', 'raw_clinic', 'raw_inquiry_dialog']
